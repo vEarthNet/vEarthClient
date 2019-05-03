@@ -10,7 +10,7 @@ using Mono.Data.Sqlite;
 using UnityEngine;
 using UnityEditor;
 
-using EasyRoads3Dv3;
+//using EasyRoads3Dv3;
 
 public struct TerrainPagerData
 {    
@@ -215,9 +215,9 @@ public class TerrainPager : MonoBehaviour
     worldDataSource mDataSource;
     public TerrainPagerData mD;//This is a standalone data struct for easy portability.//OR NOT?? What is easier about this actually?
 
-    
-    public ERRoadNetwork mRoadNetwork;
-    public ERRoad mRoad;
+
+    //public ERRoadNetwork mRoadNetwork;//TEMP, ROADS
+    //public ERRoad mRoad;//TEMP, ROADS
     List<erRoadType> mRoadTypes;
 
     IDbConnection mDbConn;
@@ -315,8 +315,8 @@ public class TerrainPager : MonoBehaviour
 
     bool mEditorMode = false;
 
-    ERRoadType roadTypeHwy, roadTypeMotorway, roadTypeDirt, roadTypeSidewalk, roadTypePath;
-    ERConnection X_SourceConn, T_SourceConn;
+    //ERRoadType roadTypeHwy, roadTypeMotorway, roadTypeDirt, roadTypeSidewalk, roadTypePath;//TEMP, ROADS
+    //ERConnection X_SourceConn, T_SourceConn;//TEMP, ROADS
 
     //TEMP, just using this to have one place to go, while I figure out how to actually handle it.
     bool importRoads = false;
@@ -342,7 +342,7 @@ public class TerrainPager : MonoBehaviour
         //ImportOpenStreetMap(osmFile);
 
         //NOTE: ERRoadNetwork is a singleton, so when you do this you get a reference to the one active road network in the scene already, not a new one.
-        mRoadNetwork = new ERRoadNetwork();
+        //mRoadNetwork = new ERRoadNetwork();//TEMP, ROADS
 
         mAllLandCovers = new List<short>();
         mUnfoundLandCovers = new List<short>();
@@ -465,7 +465,7 @@ public class TerrainPager : MonoBehaviour
         tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
 
 
-
+        /*  //TEMP, ROADS
         ////////////////////////////////////////////////////////////////////////
         //TEMP TEMP TEMP load an array from the db!
         // create a new road type - FIX: define set of roadProperties elsewhere and load these up in a loop.
@@ -514,7 +514,7 @@ public class TerrainPager : MonoBehaviour
 
         if (convertRoads) ConvertRoads(new Vector2(mTileStartLongitude, mTileStartLatitude),new Vector2(endLong, endLat),0);
         if (makeRoads) MakeRoads(new Vector2(mTileStartLongitude, mTileStartLatitude), new Vector2(endLong, endLat), 0);
-
+        */
         MakeShapes(BaseTerrain);
         if (terrData.treeInstanceCount == 0)
             MakeForest(BaseTerrain);
@@ -2123,8 +2123,8 @@ mSQL->CloseDatabase();
             {
                 tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
                 ////mRoadedTerrains.Add(index);//Hm, do we need this anymore, if we always make roads on loading each tile?
-                if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);
-                if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);
+                //if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);//TEMP, ROADS
+                //if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);//TEMP, ROADS
                 MakeShapes(terr);
                 MakeForest(terr);
 
@@ -2136,8 +2136,8 @@ mSQL->CloseDatabase();
             {
                 tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
                 //mRoadedTerrains.Add(index);//Hm, do we need this anymore, if we always make roads on loading each tile?
-                if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);
-                if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);
+                //if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);//TEMP, ROADS
+                //if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);//TEMP, ROADS
                 MakeShapes(terr);
             }
         }
@@ -2162,8 +2162,8 @@ mSQL->CloseDatabase();
 
             float endLat = startLat + mD.mTileWidthLatitude;
             float endLong = startLong + mD.mTileWidthLongitude;
-            if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);
-            if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);
+            //if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);//TEMP, ROADS
+            //if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);//TEMP, ROADS
             MakeForest(terr);
             MakeShapes(terr);
 
@@ -2432,7 +2432,7 @@ mSQL->CloseDatabase();
 
         return edgePos;
     }
-
+    /*
     private void ConvertRoads(Vector2 lowerLeft,Vector2 upperRight, int terrIndex)
     {
         if (terrIndex < 0 || terrIndex > (mTerrains.Count - 1))
@@ -3391,12 +3391,12 @@ mSQL->CloseDatabase();
                                 mDbCmd.CommandText = insertQuery;
                                 mDbCmd.ExecuteNonQuery();
                             }
-                            /*
-                            try { mRoad.ConnectToStart(startConn, connIndex); }
-                            catch
-                            {
-                                Debug.Log("WHOOPS! failed to attach start connection,  " + roadName + " node " + nodeList[startNode].node_id);
-                            }*/
+                            
+                            //try { mRoad.ConnectToStart(startConn, connIndex); }
+                            //catch
+                            //{
+                            //    Debug.Log("WHOOPS! failed to attach start connection,  " + roadName + " node " + nodeList[startNode].node_id);
+                            //}
                         }
                         if (hasEndConn)
                         {
@@ -3433,11 +3433,11 @@ mSQL->CloseDatabase();
                                 mDbCmd.ExecuteNonQuery();
                             }
 
-                            /*try { mRoad.ConnectToEnd(endConn, connIndex); }
-                            catch
-                            {
-                                Debug.Log("WHOOPS! failed to attach end connection,  " + roadName + " node " + mN.node_id);
-                            }*/
+                            //try { mRoad.ConnectToEnd(endConn, connIndex); }
+                            //catch
+                            //{
+                            //    Debug.Log("WHOOPS! failed to attach end connection,  " + roadName + " node " + mN.node_id);
+                            //}
                         }
 
                         endRoadSegment = false;
@@ -3705,7 +3705,7 @@ mSQL->CloseDatabase();
             reader.Close();
             
 
-            /*
+            
              
             //mRoad.GetMarkerPosition(int marker);
             //mRoad.GetMarkerTilting(int marker);
@@ -3720,10 +3720,10 @@ mSQL->CloseDatabase();
             //mRoadNetwork.BuildRoadNetwork();//What does this do exactly?
 
 
-             */
+             
         }
     }
-
+    */
     /*
                 if (node_0 > 0)
                 {
@@ -3842,7 +3842,7 @@ mSQL->CloseDatabase();
                 mRoad = mRoadNetwork.CreateRoad(roadName, roadTypeHwy, markers);
      */
 
-
+        /*
     public void SaveRoads()
     {
         Debug.Log("Saving road network! roads " + mRoadNetwork.GetRoads().Length);
@@ -3866,7 +3866,7 @@ mSQL->CloseDatabase();
 
 
 
-    }
+    }*/
 
     private void loadTerrainData(int index, string heightFile,string textureFile,string tileName)
     {

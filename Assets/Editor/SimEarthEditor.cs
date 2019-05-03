@@ -58,7 +58,7 @@ public class SimEarthEditorMenu
         if (theTP == null)
             return;
 
-        theTP.SaveRoads();
+        //theTP.SaveRoads();//TEMP, ROADS
     }
 
     [MenuItem("SimEarth/DeleteRoads", false, 23)]
