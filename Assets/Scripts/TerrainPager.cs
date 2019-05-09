@@ -12,48 +12,9 @@ using UnityEditor;
 
 //using EasyRoads3Dv3;
 
-public struct TerrainPagerData
-{    
-    public string mSkyboxPath;
-    public string mTerrainPath;
-    public string mResourcePath;
-    public string mSkyboxLockfile;//Keep in WorldDataSource? Or not?
-    public string mTerrainLockfile;//Irrelevant.
-    public string mTerrainHeightsBinFile;//One tile's worth of heights
-    public string mTerrainTexturesBinFile;// ... and textures
-    public string mTerrainTreesBinFile;// ... and trees.
-    public string[] skybox_files;//Filenames for the five skybox textures, because we 
-                                 //are going to have to flip and rotate them before they can be used in Torque.
-                                 //FIX: make this six, and include the bottom one in FG. 
-                                //(Although - really? Can it _ever_ be seen if all is working? Are we just wasting FG's time?)
-
-    public float mMapCenterLongitude;
-    public float mMapCenterLatitude;
-
-    public float mMetersPerDegreeLongitude;
-    public float mDegreesPerMeterLongitude;
-    public float mMetersPerDegreeLatitude;
-    public float mDegreesPerMeterLatitude;
-
-    public float mClientPosLongitude;
-    public float mClientPosLatitude;
-    public float mClientPosAltitude;
-
-    public float mTileLoadRadius;
-    public float mTileDropRadius;
-
-    public float mTileWidth;
-    public float mTileWidthLongitude;
-    public float mTileWidthLatitude;
-    public float mSquareSize;
-
-    public int mGridSize;
-    public int mHeightmapRes;
-    public int mTextureRes;
-    public int mLightmapRes;
-    public int mSkyboxRes;
-    public int mSkyboxCacheMode;
-}
+//public struct TerrainPagerData
+//{    
+//}
 
 //Maybe obsolete?
 struct loadTerrainData
@@ -213,9 +174,8 @@ public class TerrainPager : MonoBehaviour
     //worldDataSource mDataSource;
     //dataSource mDataSource;
     worldDataSource mDataSource;
-    public TerrainPagerData mD;//This is a standalone data struct for easy portability.//OR NOT?? What is easier about this actually?
-
-
+    //public TerrainPagerData mD;//This is a standalone data struct for easy portability.//OR NOT?? What is easier about this actually?
+    
     //public ERRoadNetwork mRoadNetwork;//TEMP, ROADS
     //public ERRoad mRoad;//TEMP, ROADS
     List<erRoadType> mRoadTypes;
@@ -263,11 +223,64 @@ public class TerrainPager : MonoBehaviour
     bool mDoStaticShapeUpdates;
 
     Vector3 mClientPos;
+    Vector3 mStartPos;
+
+    ///////////////////////////////////////////////////////////
+    //HERE: all the TerrainPagerData fields
+    public float mTileLoadRadius;
+    public float mTileDropRadius;
+
+    public string mSkyboxPath;
+    public string mTerrainPath;
+    public string mResourcePath;
+    //public string mSkyboxLockfile;//Keep in WorldDataSource? Or not?
+    //public string mTerrainLockfile;//Irrelevant.
+    //public string mTerrainHeightsBinFile;//One tile's worth of heights
+    //public string mTerrainTexturesBinFile;// ... and textures
+    //public string mTerrainTreesBinFile;// ... and trees.
+    //public string[] skybox_files;//Filenames for the five skybox textures, because we 
+                                 //are going to have to flip and rotate them before they can be used in Torque.
+                                 //FIX: make this six, and include the bottom one in FG. 
+                                 //(Although - really? Can it _ever_ be seen if all is working? Are we just wasting FG's time?)
+
+    public float mMapCenterLongitude;
+    public float mMapCenterLatitude;
+    
+    public float mTileWidth;
+    public float mSquareSize;
+
+    public int mGridSize;
+    public int mHeightmapRes;
+    public int mTextureRes;
+    public int mLightmapRes;
+    public int mSkyboxRes;
+
+    [HideInInspector]
+    public float mMetersPerDegreeLongitude;
+    [HideInInspector]
+    public float mDegreesPerMeterLongitude;
+    [HideInInspector]
+    public float mMetersPerDegreeLatitude;
+    [HideInInspector]
+    public float mDegreesPerMeterLatitude;
+    [HideInInspector]
+    public float mTileWidthLongitude;
+    [HideInInspector]
+    public float mTileWidthLatitude;
+
+    /////////////////////////////////
+
+    private float mClientPosLongitude;
+    private float mClientPosLatitude;
+    private float mClientPosAltitude;
+
+
+    ///////////////////////////////////////////////////////////
+
 
     float mTileStartLongitude;//These refer to the bottom left corner of the tile
     float mTileStartLatitude;  //the client is currently standing on or over.
 
-    Vector3 mStartPos;
 
     int mCurrentTick;
     int mTickInterval;
@@ -290,22 +303,16 @@ public class TerrainPager : MonoBehaviour
     // ??? Still necessary in Unity ???
     //These are the only overlapping items between terrainPager and terrainPagerData - they are here because  
     //they need to be exposed to script for the terrainPager creation block in the mission.
-    float mMapCenterLongitude;
-    float mMapCenterLatitude;
-    float mTileLoadRadius;//At a future time these could be weighted by axes, to get an eliptical area
-    float mTileDropRadius;//instead of a circle, but definitely not necessary for first pass.
     float mForestRadius;
     float mStreetRadius;
     float mShapeRadius;
     float mForestTries;
-    float mSkyboxRes;
 
     float mCellWidth;
     float mCellArea;
     float mMinCellArea;//Amount of free area below which we don't bother trying to add more trees. Default=10%.   
     ///////////////////////
-
-    int mGridSize;
+    
     int mGridMidpoint;
 
     float mLastTileStartLong;//For determining when we've crossed a tile border and 
@@ -351,43 +358,41 @@ public class TerrainPager : MonoBehaviour
         mRoadMarkerIds = new Dictionary<int, List<int>>();
         mConnectionIds = new List<int>();
 
-        mD.mTileLoadRadius = 1000.0f;//PUT IN EDITOR
-        mD.mTileDropRadius = 10000.0f;//NOT USED
+        mTileLoadRadius = 2000.0f;//PUT IN EDITOR
+        mTileDropRadius = 10000.0f;//NOT USED
         mForestRadius = 320.0f;
         mStreetRadius = 320.0f;
         mShapeRadius = 320.0f;
 
-
-
         //HERE: this should all be done elsewhere - either exposed to the editor, or loaded in from the DB or from a file.
-        mD.mSkyboxPath = Application.dataPath + "/TerrainMaster/Skybox/";//Currently the same
-        mD.mTerrainPath = Application.dataPath + "/TerrainMaster/NewTerrain/";//but could be different. 
-        mD.mResourcePath = Application.dataPath + "/Resources/Terrain/";
+        mSkyboxPath = Application.dataPath + "/Resources/Skybox/";//Currently the same
+        mTerrainPath = Application.dataPath + "/Resources/TerrainBin/";//but could be different. 
+        mResourcePath = Application.dataPath + "/Resources/Terrain/";
 
-        mD.mSquareSize = 10.0f;
-        mD.mSkyboxRes = 800;
-        mD.mHeightmapRes = 257;//256, FiX FIX FIX, have to get back into FG to fix this though.
+        mSquareSize = 10.0f;
+        mSkyboxRes = 800;
+        mHeightmapRes = 257;//256, FiX FIX FIX, have to get back into FG to fix this though.
 
-        mD.mTileWidth = (float)(mD.mHeightmapRes - 1) * mD.mSquareSize;
+        mTileWidth = (float)(mHeightmapRes - 1) * mSquareSize;
 
-        mD.mMapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
-        mD.mMapCenterLongitude = -123.0046f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ?? FIX FIX FIX
+        mMapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
+        mMapCenterLongitude = -123.0046f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ?? FIX FIX FIX
 
         //mD.mMetersPerDegreeLongitude = 80389.38609f;//2560.0f / mTileWidthLongitude ;//FIX: get from server, based on centerLat/Long
         //mD.mDegreesPerMeterLongitude = 0.000012439f;//mTileWidthLongitude / 2560.0f;
         //mD.mMetersPerDegreeLatitude = 111169.0164f;//2560.0f / mTileWidthLatitude ;
         //mD.mDegreesPerMeterLatitude = 0.000008995f;//mTileWidthLatitude / 2560.0f;
-        float rLat = mD.mMapCenterLatitude * Mathf.Deg2Rad;
-        mD.mMetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
-        mD.mMetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
-        mD.mDegreesPerMeterLongitude = 1.0f / mD.mMetersPerDegreeLongitude;
-        mD.mDegreesPerMeterLatitude = 1.0f / mD.mMetersPerDegreeLatitude;
-        mD.mTileWidthLongitude = mD.mDegreesPerMeterLongitude * mD.mTileWidth;
-        mD.mTileWidthLatitude = mD.mDegreesPerMeterLatitude * mD.mTileWidth;
-        Debug.Log("MetersPerDegree Longitude: " + mD.mMetersPerDegreeLongitude + " Latitude " + mD.mMetersPerDegreeLatitude + " degreesPerMeterLong " + mD.mDegreesPerMeterLongitude);
-        mD.mClientPosLongitude = -9999.0f;//Doing this as a flag to tell us we haven't done init yet - since 0.0 degrees longitude is possible. 
-        mD.mClientPosLatitude = 0.0f;//Is there a good reason these are in this struct though?
-        mD.mClientPosAltitude = 0.0f;
+        float rLat = mMapCenterLatitude * Mathf.Deg2Rad;
+        mMetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
+        mMetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
+        mDegreesPerMeterLongitude = 1.0f / mMetersPerDegreeLongitude;
+        mDegreesPerMeterLatitude = 1.0f / mMetersPerDegreeLatitude;
+        mTileWidthLongitude = mDegreesPerMeterLongitude * mTileWidth;
+        mTileWidthLatitude = mDegreesPerMeterLatitude * mTileWidth;
+        Debug.Log("MetersPerDegree Longitude: " + mMetersPerDegreeLongitude + " Latitude " + mMetersPerDegreeLatitude + " degreesPerMeterLong " + mDegreesPerMeterLongitude);
+        mClientPosLongitude = -9999.0f;//Doing this as a flag to tell us we haven't done init yet - since 0.0 degrees longitude is possible. 
+        mClientPosLatitude = 0.0f;//Is there a good reason these are in this struct though?
+        mClientPosAltitude = 0.0f;
 
 
         //Smaller units for loading forest, streets, or shapes.
@@ -399,8 +404,8 @@ public class TerrainPager : MonoBehaviour
         findClientTile();
 
         string tileName = getTileName(mTileStartLongitude, mTileStartLatitude);
-        string heightfilename = mD.mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
-        string texturefilename = mD.mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
+        string heightfilename = mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
+        string texturefilename = mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
         TerrainData terrData;
         int alphaRes;
 
@@ -408,7 +413,7 @@ public class TerrainPager : MonoBehaviour
         //GridSize is the number of terrains you can fit within the tileLoadRadius from the center, so basically (2 * loadRadius)/tileWidth, 
         //Except, we want to limit gridsize to odd numbers, eg 3x3, 5x5, 7x7 etc. so that there will always be a center tile. 
 
-        mGridSize = 1 + (2 * ((int)(mD.mTileLoadRadius / mD.mTileWidth) + 1));
+        mGridSize = 1 + (2 * ((int)(mTileLoadRadius / mTileWidth) + 1));
         mGridMidpoint = (mGridSize - 1) / 2;
         mTerrainGrid = new List<GameObject>();//mGridSize * mGridSize
         mTerrains = new List<GameObject>();
@@ -458,8 +463,8 @@ public class TerrainPager : MonoBehaviour
             mDataSource.Start();
         }
         
-        float endLat = mTileStartLatitude + mD.mTileWidthLatitude;
-        float endLong = mTileStartLongitude + mD.mTileWidthLongitude;
+        float endLat = mTileStartLatitude + mTileWidthLatitude;
+        float endLong = mTileStartLongitude + mTileWidthLongitude;
         terrData = mTerrain.GetComponent<Terrain>().terrainData;
         alphaRes = terrData.alphamapResolution;
         tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
@@ -696,7 +701,7 @@ public class TerrainPager : MonoBehaviour
                     ((int)mLastSkyboxTick < ((int)mCurrentTick - (int)mSkyboxTickInterval)) &&
                     (mSentSkyboxRequest == false))
                 {
-                    mDataSource.addSkyboxRequest(mTileStartLongitude, mTileStartLatitude, mD.mClientPosLongitude, mD.mClientPosLatitude, mD.mClientPosAltitude);
+                    mDataSource.addSkyboxRequest(mTileStartLongitude, mTileStartLatitude, mClientPosLongitude, mClientPosLatitude, mClientPosAltitude);
                     //mLoadState = 4;
                     mSentSkyboxRequest = true;
                     mDataSource.mSkyboxDone = false;
@@ -770,8 +775,8 @@ public class TerrainPager : MonoBehaviour
         reader.Close();
         
         selectQuery = "SELECT id,latitude,longitude,name FROM mapNode WHERE type='MapNode' AND latitude >= " + terrCoord.latitude +
-                      " AND latitude < " + (terrCoord.latitude + mD.mTileWidthLatitude) + " AND longitude >= " +
-                      terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + mD.mTileWidthLongitude) + ";";
+                      " AND latitude < " + (terrCoord.latitude + mTileWidthLatitude) + " AND longitude >= " +
+                      terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + mTileWidthLongitude) + ";";
         //Debug.Log("makeShapes: " + selectQuery);
         mDbCmd.CommandText = selectQuery;
         reader = mDbCmd.ExecuteReader();
@@ -1737,25 +1742,25 @@ mSQL->CloseDatabase();
         else //HERE: do a search for any active player or object with a "MainCamera" tag...? Make sure it's locally owned.
             return;
         
-        mD.mClientPosLongitude = mD.mMapCenterLongitude + (mClientPos.x * mD.mDegreesPerMeterLongitude);
-        mD.mClientPosLatitude  = mD.mMapCenterLatitude + (mClientPos.z * mD.mDegreesPerMeterLatitude);
-        mD.mClientPosAltitude  = mClientPos.y;
+        mClientPosLongitude = mMapCenterLongitude + (mClientPos.x * mDegreesPerMeterLongitude);
+        mClientPosLatitude  = mMapCenterLatitude + (mClientPos.z * mDegreesPerMeterLatitude);
+        mClientPosAltitude  = mClientPos.y;
     }
 
     private void findClientTile()
     {
         FindClientPos();
 
-        Vector2 clientPos = new Vector2(mD.mClientPosLongitude, mD.mClientPosLatitude);
+        Vector2 clientPos = new Vector2(mClientPosLongitude, mClientPosLatitude);
         //FIX: The following is off by one half tile width because of my (perhaps questionable) decision to put 
         //map center in the center of a tile rather than at the lower left corner of that tile. Subject to review.
-        Vector2 centerTileStart = new Vector2(mD.mMapCenterLongitude - (mD.mTileWidthLongitude / 2.0f),
-                                    mD.mMapCenterLatitude - (mD.mTileWidthLatitude / 2.0f));
+        Vector2 centerTileStart = new Vector2(mMapCenterLongitude - (mTileWidthLongitude / 2.0f),
+                                    mMapCenterLatitude - (mTileWidthLatitude / 2.0f));
 
         //mLastTileStartLong = mTileStartLongitude;
         //mLastTileStartLat = mTileStartLatitude;
-        mTileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / mD.mTileWidthLongitude) * mD.mTileWidthLongitude) + centerTileStart.x;
-        mTileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / mD.mTileWidthLatitude) * mD.mTileWidthLatitude) + centerTileStart.y;
+        mTileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / mTileWidthLongitude) * mTileWidthLongitude) + centerTileStart.x;
+        mTileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / mTileWidthLatitude) * mTileWidthLatitude) + centerTileStart.y;
         //Debug.Log("Tile Width Longitude: " + (mD.mTileWidthLongitude / 2.0f) + "  mapCenter " + mD.mMapCenterLongitude + " , " + mD.mMapCenterLatitude  + "  centerTileStart " + centerTileStart.x + " , " + centerTileStart.y);
     }
 
@@ -1766,11 +1771,11 @@ mSQL->CloseDatabase();
 
         //FIX: The following is off by one half tile width because of my (perhaps questionable) decision to put 
         //map center in the center of a tile rather than at the lower left corner of that tile. Subject to review.
-        Vector2 mapCenter = new Vector2(mD.mMapCenterLongitude - (mD.mTileWidthLongitude / 2.0f),
-                                    mD.mMapCenterLatitude - (mD.mTileWidthLatitude / 2.0f));
+        Vector2 mapCenter = new Vector2(mMapCenterLongitude - (mTileWidthLongitude / 2.0f),
+                                    mMapCenterLatitude - (mTileWidthLatitude / 2.0f));
 
-        double tileStartLongitude = (Math.Floor((latLongPos.longitude - mapCenter.x) / mD.mTileWidthLongitude) * mD.mTileWidthLongitude) + mapCenter.x;
-        double tileStartLatitude = (Math.Floor((latLongPos.latitude - mapCenter.y) / mD.mTileWidthLatitude) * mD.mTileWidthLatitude) + mapCenter.y;
+        double tileStartLongitude = (Math.Floor((latLongPos.longitude - mapCenter.x) / mTileWidthLongitude) * mTileWidthLongitude) + mapCenter.x;
+        double tileStartLatitude = (Math.Floor((latLongPos.latitude - mapCenter.y) / mTileWidthLatitude) * mTileWidthLatitude) + mapCenter.y;
 
         return new Coordinates(tileStartLongitude, tileStartLatitude);    
     }
@@ -1784,9 +1789,9 @@ mSQL->CloseDatabase();
         //List<loadTerrainData> loadTerrains = new List<loadTerrainData>();//This is a list of the coords and distances for each terrain 
                                                 //that we need to request from the worldServer.
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * mD.mTileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * mD.mTileWidthLatitude);
-        Debug.Log("loading tile grid, client pos " + mD.mClientPosLongitude + " " + mD.mClientPosLatitude + ", client tile start " +
+        float startLong = mTileStartLongitude - (mGridMidpoint * mTileWidthLongitude);
+        float startLat = mTileStartLatitude - (mGridMidpoint * mTileWidthLatitude);
+        Debug.Log("loading tile grid, client pos " + mClientPosLongitude + " " + mClientPosLatitude + ", client tile start " +
               mTileStartLongitude + " " + mTileStartLatitude + " local grid start " + startLong + " " + startLat);
 
        
@@ -1794,17 +1799,17 @@ mSQL->CloseDatabase();
         {
             for (int x = 0; x < mGridSize; x++)
             {
-                double kLong = startLong + (x * mD.mTileWidthLongitude);
-                double kLat = startLat + (y * mD.mTileWidthLatitude);
-                float midLong = (float)kLong + (mD.mTileWidthLongitude / 2.0f);
-                float midLat = (float)kLat + (mD.mTileWidthLatitude / 2.0f);
-                Vector2 tileCenterDiff = new Vector2((mD.mClientPosLongitude - midLong) * mD.mMetersPerDegreeLongitude,
-                                              (mD.mClientPosLatitude - midLat) * mD.mMetersPerDegreeLatitude);
+                double kLong = startLong + (x * mTileWidthLongitude);
+                double kLat = startLat + (y * mTileWidthLatitude);
+                float midLong = (float)kLong + (mTileWidthLongitude / 2.0f);
+                float midLat = (float)kLat + (mTileWidthLatitude / 2.0f);
+                Vector2 tileCenterDiff = new Vector2((mClientPosLongitude - midLong) * mMetersPerDegreeLongitude,
+                                              (mClientPosLatitude - midLat) * mMetersPerDegreeLatitude);
                 float tileDistance = tileCenterDiff.magnitude;
 
                 tileName = getTileName((float)kLong, (float)kLat);
-                heightfilename = mD.mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
-                texturefilename = mD.mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
+                heightfilename = mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
+                texturefilename = mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
                 //terrainfilename = mD.mTerrainPath + "terrain." + tileName + ".ter";// sprintf(terrainfilename, "%sterrain.%s.ter", mD.mTerrainPath.c_str(), tileName);
 
                 //New way: we are guaranteeing that the center tile is loaded, so now we should try to load the other eight, or however many.
@@ -1958,13 +1963,13 @@ mSQL->CloseDatabase();
 
     private void checkTileGrid()
     {
-        if (mD.mTileWidthLongitude == 0)
+        if (mTileWidthLongitude == 0)
             return;//FIX: something is breaking horribly before here, getting NaN for mTileStartLongitude, etc.
         //bool verbose = false;
         string tileName, heightfilename, texturefilename;
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * mD.mTileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * mD.mTileWidthLatitude);
+        float startLong = mTileStartLongitude - (mGridMidpoint * mTileWidthLongitude);
+        float startLat = mTileStartLatitude - (mGridMidpoint * mTileWidthLatitude);
         //Debug.Log("checkTileGrid -  startLong " + startLong + " startLat " + startLat + " tileStartLong " + mTileStartLongitude +
         //        " tileWidthLong " + mD.mTileWidthLongitude + " midpoint " + mGridMidpoint);
         for (int y = 0; y < mGridSize; y++)
@@ -1972,18 +1977,18 @@ mSQL->CloseDatabase();
             for (int x = 0; x < mGridSize; x++)
             {
                 bool loaded = false;
-                float kLong = startLong + (x * mD.mTileWidthLongitude);
-                float kLat = startLat + (y * mD.mTileWidthLatitude);
-                float midLong = kLong + (mD.mTileWidthLongitude / 2.0f);
-                float midLat = kLat + (mD.mTileWidthLatitude / 2.0f);
+                float kLong = startLong + (x * mTileWidthLongitude);
+                float kLat = startLat + (y * mTileWidthLatitude);
+                float midLong = kLong + (mTileWidthLongitude / 2.0f);
+                float midLat = kLat + (mTileWidthLatitude / 2.0f);
 
                 //Vector2 tileCenterDiff = new Vector2((mD.mClientPosLongitude - midLong) * mD.mMetersPerDegreeLongitude,
                 //                              (mD.mClientPosLatitude - midLat) * mD.mMetersPerDegreeLatitude);
                 //float tileDistance = tileCenterDiff.magnitude;
 
                 tileName = getTileName(kLong, kLat);
-                heightfilename = mD.mTerrainPath + "hght." + tileName + ".bin";
-                texturefilename = mD.mTerrainPath + "text." + tileName + ".bin";
+                heightfilename = mTerrainPath + "hght." + tileName + ".bin";
+                texturefilename = mTerrainPath + "text." + tileName + ".bin";
 
 
                 for (int c=0; c<mTerrains.Count; c++)
@@ -2058,8 +2063,8 @@ mSQL->CloseDatabase();
         TerrainData terrData = new TerrainData();
         
         tileName = getTileName(startLong, startLat);
-        heightfilename = mD.mTerrainPath + "hght." + tileName + ".bin";
-        texturefilename = mD.mTerrainPath + "text." + tileName + ".bin";
+        heightfilename = mTerrainPath + "hght." + tileName + ".bin";
+        texturefilename = mTerrainPath + "text." + tileName + ".bin";
         //terrainName = "terrain." + tileName + ".ter";
         //terrFileName = mD.mTerrainPath + terrainName;
         TerrainObj.name = tileName;
@@ -2085,8 +2090,8 @@ mSQL->CloseDatabase();
         TerrainCollider terrCollider = TerrainObj.AddComponent<TerrainCollider>();
         Terrain terr = TerrainObj.AddComponent<Terrain>();
 
-        TerrainObj.transform.position = new Vector3(((startLong - mD.mMapCenterLongitude) * mD.mMetersPerDegreeLongitude), 0.0f,
-                (startLat - mD.mMapCenterLatitude) * mD.mMetersPerDegreeLatitude);
+        TerrainObj.transform.position = new Vector3(((startLong - mMapCenterLongitude) * mMetersPerDegreeLongitude), 0.0f,
+                (startLat - mMapCenterLatitude) * mMetersPerDegreeLatitude);
         TerrainObj.name = tileName;
 
         mTerrains.Add(TerrainObj);
@@ -2107,8 +2112,8 @@ mSQL->CloseDatabase();
             terr.terrainData = terrData;
             terr.GetComponent<TerrainCollider>().terrainData = terrData;
             int index = mTerrains.FindIndex(x => x.Equals(TerrainObj));
-            float endLat = startLat + mD.mTileWidthLatitude;
-            float endLong = startLong + mD.mTileWidthLongitude;
+            float endLat = startLat + mTileWidthLatitude;
+            float endLong = startLong + mTileWidthLongitude;
             
             //Okay, HERE: we really need a way to detect the flat terrains we are accidentally creating wherever we lack data.
             //We could go fix the original problem and delete remaining ones manually, but I kind of like them as opposed to empty space.
@@ -2160,8 +2165,8 @@ mSQL->CloseDatabase();
             //float endLong = mTileStartLongitude + mD.mTileWidthLongitude;
             ////MakeRoads(new Vector2(mTileStartLongitude, mTileStartLatitude), new Vector2(endLong, endLat));
 
-            float endLat = startLat + mD.mTileWidthLatitude;
-            float endLong = startLong + mD.mTileWidthLongitude;
+            float endLat = startLat + mTileWidthLatitude;
+            float endLong = startLong + mTileWidthLongitude;
             //if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);//TEMP, ROADS
             //if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);//TEMP, ROADS
             MakeForest(terr);
@@ -2313,27 +2318,27 @@ mSQL->CloseDatabase();
     public Vector3 ConvertLatLongToXYZ(Vector3 pos)
     {
         Vector3 newPos;
-        newPos.x = (pos.x - mD.mMapCenterLongitude) * mD.mMetersPerDegreeLongitude;
+        newPos.x = (pos.x -mMapCenterLongitude) * mMetersPerDegreeLongitude;
         newPos.y = pos.y;
-        newPos.z = (pos.z - mD.mMapCenterLatitude) * mD.mMetersPerDegreeLatitude; 
+        newPos.z = (pos.z - mMapCenterLatitude) * mMetersPerDegreeLatitude; 
         return newPos;
     }
 
     public Vector3 ConvertLatLongToXYZ(double longitude, float altitude, double latitude)
     {
         Vector3 newPos;
-        newPos.x = (float)((longitude - (double)mD.mMapCenterLongitude) * (double)mD.mMetersPerDegreeLongitude);
+        newPos.x = (float)((longitude - (double)mMapCenterLongitude) * (double)mMetersPerDegreeLongitude);
         newPos.y = altitude; 
-        newPos.z = (float)((latitude - (double)mD.mMapCenterLatitude) * (double)mD.mMetersPerDegreeLatitude);
+        newPos.z = (float)((latitude - (double)mMapCenterLatitude) * (double)mMetersPerDegreeLatitude);
         return newPos;
     }
 
     public Coordinates ConvertXYZToLatLong(Vector3 pos)
     {
         Coordinates newPos = new Coordinates();
-        newPos.longitude = (double)(mD.mMapCenterLongitude + (pos.x * mD.mDegreesPerMeterLongitude));
+        newPos.longitude = (double)(mMapCenterLongitude + (pos.x * mDegreesPerMeterLongitude));
         //newPos.y = pos.y;
-        newPos.latitude = (double)(mD.mMapCenterLatitude + (pos.z * mD.mDegreesPerMeterLatitude));
+        newPos.latitude = (double)(mMapCenterLatitude + (pos.z * mDegreesPerMeterLatitude));
         return newPos;
     }
     
@@ -4264,7 +4269,7 @@ mSQL->CloseDatabase();
 
         checkTileGrid();
 
-        Debug.Log("Started terrain pager!!! degreesPerMeterLong " + mD.mDegreesPerMeterLongitude);
+        Debug.Log("Started terrain pager!!! degreesPerMeterLong " + mDegreesPerMeterLongitude);
 
     }
 

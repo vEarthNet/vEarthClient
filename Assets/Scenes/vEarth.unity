@@ -231,7 +231,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 60000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MouseSensitivity: 6
-  MoveSpeed: 2
+  MoveSpeed: 16
   MoveCamForward: 119
   MoveCamBackward: 115
   MoveCamLeft: 97
@@ -402,7 +402,7 @@ TerrainCollider:
   m_GameObject: {fileID: 1346167372}
   m_Material: {fileID: 0}
   m_Enabled: 1
-  m_TerrainData: {fileID: 15600000, guid: d11c2b3eb93a5a844a30f8ffc3b0d1d9, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: 03a90f5b0ece3d240a6e6c9932a895c1, type: 2}
   m_EnableTreeColliders: 1
 --- !u!218 &1346167374
 Terrain:
@@ -463,6 +463,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1518889425}
+  - component: {fileID: 1518889426}
   m_Layer: 0
   m_Name: TerrainPager
   m_TagString: Untagged
@@ -484,3 +485,41 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1518889426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1518889424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5525679aa598aca45a7340743ff3cc55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BaseTerrainObject: {fileID: 1346167372}
+  mPlayer: {fileID: 0}
+  mCamera: {fileID: 534669902}
+  MapNodePrefab: {fileID: 0}
+  mDbPath: Resources/w130n40.db
+  mUseDataSource: 0
+  mTileLoadRadius: 3000
+  mTileDropRadius: 10000
+  mSkyboxPath: 
+  mTerrainPath: 
+  mResourcePath: 
+  mMapCenterLongitude: 0
+  mMapCenterLatitude: 0
+  mTileWidth: 0
+  mSquareSize: 0
+  mGridSize: 0
+  mHeightmapRes: 0
+  mTextureRes: 0
+  mLightmapRes: 0
+  mSkyboxRes: 0
+  mMetersPerDegreeLongitude: 0
+  mDegreesPerMeterLongitude: 0
+  mMetersPerDegreeLatitude: 0
+  mDegreesPerMeterLatitude: 0
+  mTileWidthLongitude: 0
+  mTileWidthLatitude: 0
