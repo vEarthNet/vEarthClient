@@ -523,10 +523,9 @@ public class TerrainPager : MonoBehaviour
             MakeForest(BaseTerrain);
 
 
-        //EDITOR ONLY
-        //if (Application.isEditor)
-        //    AssetDatabase.SaveAssets();//EDITOR ONLY
-                                       //FIX: Apparently this can't even compile in a build. Is there an #ifdef way to get rid of it?
+#if UNITY_EDITOR
+        AssetDatabase.SaveAssets();//EDITOR ONLY
+#endif
 
 
     }
@@ -2134,9 +2133,10 @@ mSQL->CloseDatabase();
                 MakeShapes(terr);
                 MakeForest(terr);
 
-                //EDITOR ONLY
-                //if (Application.isEditor)
-                //    AssetDatabase.SaveAssets();//EDITOR ONLY -  ifdef?
+
+#if UNITY_EDITOR   
+                AssetDatabase.SaveAssets();//EDITOR ONLY
+#endif
             }
             else
             {
@@ -2153,9 +2153,10 @@ mSQL->CloseDatabase();
             terr.terrainData = terrData;
             int alphaRes = terrData.alphamapResolution;
 
-            //EDITOR ONLY
-            //if (Application.isEditor)
-            //    AssetDatabase.CreateAsset(terrData, "Assets/Resources/Terrain/" + assetName);//EDITOR ONLY -  ifdef?
+
+#if UNITY_EDITOR 
+            AssetDatabase.CreateAsset(terrData, "Assets/Resources/Terrain/" + assetName);
+#endif
             //Debug.Log("******************FAILED TO FIND ASSET FILE, LOADING BINS!!!!");
             loadTerrainData(mTerrains.Count - 1, heightfilename, texturefilename, tileName);
             tSplatmap = terr.terrainData.GetAlphamaps(0, 0, alphaRes, alphaRes);
