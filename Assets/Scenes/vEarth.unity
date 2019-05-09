@@ -258,7 +258,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 143.57, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -498,28 +498,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BaseTerrainObject: {fileID: 1346167372}
-  mPlayer: {fileID: 0}
-  mCamera: {fileID: 534669902}
+  PlayerObject: {fileID: 0}
+  CameraObject: {fileID: 0}
   MapNodePrefab: {fileID: 0}
-  mDbPath: Resources/w130n40.db
-  mUseDataSource: 0
-  mTileLoadRadius: 3000
-  mTileDropRadius: 10000
-  mSkyboxPath: 
-  mTerrainPath: 
-  mResourcePath: 
-  mMapCenterLongitude: 0
-  mMapCenterLatitude: 0
-  mTileWidth: 0
-  mSquareSize: 0
-  mGridSize: 0
-  mHeightmapRes: 0
-  mTextureRes: 0
-  mLightmapRes: 0
-  mSkyboxRes: 0
-  mMetersPerDegreeLongitude: 0
-  mDegreesPerMeterLongitude: 0
-  mMetersPerDegreeLatitude: 0
-  mDegreesPerMeterLatitude: 0
-  mTileWidthLongitude: 0
-  mTileWidthLatitude: 0
+  DatabasePath: Resources/w130n40.db
+  UseDataSource: 0
+  TileLoadRadius: 3000
+  TileDropRadius: 0
+  TerrainPath: /Resources/TerrainBin/
+  MapCenterLongitude: -123.0046
+  MapCenterLatitude: 44
+  TileWidth: 0
+  SquareSize: 0
+  GridSize: 0
+  HeightmapRes: 0
+  TextureRes: 0
+  LightmapRes: 0
+  SkyboxRes: 0
+  MetersPerDegreeLongitude: 0
+  DegreesPerMeterLongitude: 0
+  MetersPerDegreeLatitude: 0
+  DegreesPerMeterLatitude: 0
+  TileWidthLongitude: 0
+  TileWidthLatitude: 0

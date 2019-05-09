@@ -166,23 +166,23 @@ public class TerrainPager : MonoBehaviour
     };
 
     public GameObject BaseTerrainObject;//This is the starter terrain, added to TerrainPager in the editor, from which it makes all the copies.
-    public GameObject mPlayer;
-    public GameObject mCamera;
+    public GameObject PlayerObject;
+    public GameObject CameraObject;
     public GameObject MapNodePrefab;
     private Terrain BaseTerrain;
 
-    //worldDataSource mDataSource;
-    //dataSource mDataSource;
-    worldDataSource mDataSource;
+    //worldDataSource DataSource;
+    //dataSource DataSource;
+    worldDataSource DataSource;
     //public TerrainPagerData mD;//This is a standalone data struct for easy portability.//OR NOT?? What is easier about this actually?
     
     //public ERRoadNetwork mRoadNetwork;//TEMP, ROADS
     //public ERRoad mRoad;//TEMP, ROADS
     List<erRoadType> mRoadTypes;
 
-    IDbConnection mDbConn;
-    IDbCommand mDbCmd;
-    public string mDbPath = "Resources/w130n40.db";
+    IDbConnection DbConn;
+    IDbCommand DbCmd;
+    public string DatabasePath = "Resources/w130n40.db";
 
     List<GameObject> mTerrains; //This is the short list of actually loaded terrains.
     List<GameObject> mTerrainGrid; //This is the sparse array in the shape of a grid centered on player. (?)
@@ -207,32 +207,34 @@ public class TerrainPager : MonoBehaviour
     Dictionary<int, int> mStaticShapes;//int oseId
     Dictionary<int, UnityEngine.Object> mPrefabs;
 
+    PagerLoadStage mLoadStage;
+
     float[,,] tSplatmap;//Temporary splatMap used for storing tree inhibitory values near roads, etc.
 
-    public bool mUseDataSource;
-    bool mSentInitRequests;
-    bool mSentTerrainRequest;
-    bool mSentSkyboxRequest;
-    bool mLoadedTileGrid;
-    bool mForestStarted;
-    bool mDoForest;
-    bool mDoForestUpdates;
-    bool mDoStreets;
-    bool mDoStreetUpdates;
-    bool mDoStaticShapes;
-    bool mDoStaticShapeUpdates;
+    public bool UseDataSource;
+    bool SentInitRequests;
+    bool SentTerrainRequest;
+    bool SentSkyboxRequest;
+    bool LoadedTileGrid;
+    bool ForestStarted;
+    bool DoForest;
+    bool DoForestUpdates;
+    bool DoStreets;
+    bool DoStreetUpdates;
+    bool DoStaticShapes;
+    bool DoStaticShapeUpdates;
 
     Vector3 mClientPos;
     Vector3 mStartPos;
 
     ///////////////////////////////////////////////////////////
     //HERE: all the TerrainPagerData fields
-    public float mTileLoadRadius;
-    public float mTileDropRadius;
+    public float TileLoadRadius;
+    public float TileDropRadius;
 
-    public string mSkyboxPath;
-    public string mTerrainPath;
-    public string mResourcePath;
+    //public string SkyboxPath;
+    public string TerrainPath;
+    //public string ResourcePath;
     //public string mSkyboxLockfile;//Keep in WorldDataSource? Or not?
     //public string mTerrainLockfile;//Irrelevant.
     //public string mTerrainHeightsBinFile;//One tile's worth of heights
@@ -243,45 +245,42 @@ public class TerrainPager : MonoBehaviour
                                  //FIX: make this six, and include the bottom one in FG. 
                                  //(Although - really? Can it _ever_ be seen if all is working? Are we just wasting FG's time?)
 
-    public float mMapCenterLongitude;
-    public float mMapCenterLatitude;
+    public float MapCenterLongitude;
+    public float MapCenterLatitude;
     
-    public float mTileWidth;
-    public float mSquareSize;
+    public float TileWidth;
+    public float SquareSize;
 
-    public int mGridSize;
-    public int mHeightmapRes;
-    public int mTextureRes;
-    public int mLightmapRes;
-    public int mSkyboxRes;
+    public int GridSize;
+    public int HeightmapRes;
+    public int TextureRes;
+    public int LightmapRes;
+    public int SkyboxRes;
 
     [HideInInspector]
-    public float mMetersPerDegreeLongitude;
+    public float MetersPerDegreeLongitude;
     [HideInInspector]
-    public float mDegreesPerMeterLongitude;
+    public float DegreesPerMeterLongitude;
     [HideInInspector]
-    public float mMetersPerDegreeLatitude;
+    public float MetersPerDegreeLatitude;
     [HideInInspector]
-    public float mDegreesPerMeterLatitude;
+    public float DegreesPerMeterLatitude;
     [HideInInspector]
-    public float mTileWidthLongitude;
+    public float TileWidthLongitude;
     [HideInInspector]
-    public float mTileWidthLatitude;
+    public float TileWidthLatitude;
 
     /////////////////////////////////
 
     private float mClientPosLongitude;
     private float mClientPosLatitude;
     private float mClientPosAltitude;
-
-
+    
     ///////////////////////////////////////////////////////////
-
-
+    
     float mTileStartLongitude;//These refer to the bottom left corner of the tile
     float mTileStartLatitude;  //the client is currently standing on or over.
-
-
+    
     int mCurrentTick;
     int mTickInterval;
 
@@ -296,17 +295,15 @@ public class TerrainPager : MonoBehaviour
     int mForestTickInterval;
     int mCellGridSize;
 
-    PagerLoadStage mLoadStage;
     int mNumHeightBinArgs = 5;
 
     /////////////////////////////////////////////////////////////////////
     // ??? Still necessary in Unity ???
-    //These are the only overlapping items between terrainPager and terrainPagerData - they are here because  
-    //they need to be exposed to script for the terrainPager creation block in the mission.
-    float mForestRadius;
-    float mStreetRadius;
-    float mShapeRadius;
-    float mForestTries;
+  
+    float ForestRadius;
+    float StreetRadius;
+    float ShapeRadius;
+    float ForestTries;
 
     float mCellWidth;
     float mCellArea;
@@ -334,14 +331,14 @@ public class TerrainPager : MonoBehaviour
     void Start()
     {
         mTickInterval = 1;
-        mDbConn = null;
-        mDbCmd = null;
+        DbConn = null;
+        DbCmd = null;
 
         mPrefabs = new Dictionary<int, UnityEngine.Object>();
         
-        if (mDbPath.Length > 0)
+        if (DatabasePath.Length > 0)
         {
-            Debug.Log("opening database! " + mDbPath);
+            Debug.Log("opening database! " + DatabasePath);
             OpenDatabase();
         }
 
@@ -358,38 +355,43 @@ public class TerrainPager : MonoBehaviour
         mRoadMarkerIds = new Dictionary<int, List<int>>();
         mConnectionIds = new List<int>();
 
-        mTileLoadRadius = 2000.0f;//PUT IN EDITOR
-        mTileDropRadius = 10000.0f;//NOT USED
-        mForestRadius = 320.0f;
-        mStreetRadius = 320.0f;
-        mShapeRadius = 320.0f;
+        //TileLoadRadius = 3000.0f;//PUT IN EDITOR
+        //TileDropRadius = 10000.0f;//NOT CURRENTLY USED
+        ForestRadius = 320.0f;
+        StreetRadius = 320.0f;
+        ShapeRadius = 320.0f;
 
         //HERE: this should all be done elsewhere - either exposed to the editor, or loaded in from the DB or from a file.
-        mSkyboxPath = Application.dataPath + "/Resources/Skybox/";//Currently the same
-        mTerrainPath = Application.dataPath + "/Resources/TerrainBin/";//but could be different. 
-        mResourcePath = Application.dataPath + "/Resources/Terrain/";
+        //SkyboxPath = Application.dataPath + "/Resources/Skybox/";//Currently the same
+        if (TerrainPath.Length == 0)
+            TerrainPath = Application.dataPath + "/Resources/TerrainBin/";//but could be different. 
+        else
+            TerrainPath = Application.dataPath + TerrainPath;
+        //ResourcePath = Application.dataPath + "/Resources/Terrain/";
 
-        mSquareSize = 10.0f;
-        mSkyboxRes = 800;
-        mHeightmapRes = 257;//256, FiX FIX FIX, have to get back into FG to fix this though.
+        SquareSize = 10.0f;
+        SkyboxRes = 800;
+        HeightmapRes = 257;//256, FiX FIX FIX, have to get back into FG to fix this though.
 
-        mTileWidth = (float)(mHeightmapRes - 1) * mSquareSize;
+        TileWidth = (float)(HeightmapRes - 1) * SquareSize;
 
-        mMapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
-        mMapCenterLongitude = -123.0046f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ?? FIX FIX FIX
+        if (MapCenterLatitude == 0)
+            MapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
+        if (MapCenterLongitude == 0)
+        MapCenterLongitude = -123.0046f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ?? FIX FIX FIX
 
-        //mD.mMetersPerDegreeLongitude = 80389.38609f;//2560.0f / mTileWidthLongitude ;//FIX: get from server, based on centerLat/Long
-        //mD.mDegreesPerMeterLongitude = 0.000012439f;//mTileWidthLongitude / 2560.0f;
-        //mD.mMetersPerDegreeLatitude = 111169.0164f;//2560.0f / mTileWidthLatitude ;
-        //mD.mDegreesPerMeterLatitude = 0.000008995f;//mTileWidthLatitude / 2560.0f;
-        float rLat = mMapCenterLatitude * Mathf.Deg2Rad;
-        mMetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
-        mMetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
-        mDegreesPerMeterLongitude = 1.0f / mMetersPerDegreeLongitude;
-        mDegreesPerMeterLatitude = 1.0f / mMetersPerDegreeLatitude;
-        mTileWidthLongitude = mDegreesPerMeterLongitude * mTileWidth;
-        mTileWidthLatitude = mDegreesPerMeterLatitude * mTileWidth;
-        Debug.Log("MetersPerDegree Longitude: " + mMetersPerDegreeLongitude + " Latitude " + mMetersPerDegreeLatitude + " degreesPerMeterLong " + mDegreesPerMeterLongitude);
+        //mD.MetersPerDegreeLongitude = 80389.38609f;//2560.0f / TileWidthLongitude ;//FIX: get from server, based on centerLat/Long
+        //mD.DegreesPerMeterLongitude = 0.000012439f;//TileWidthLongitude / 2560.0f;
+        //mD.MetersPerDegreeLatitude = 111169.0164f;//2560.0f / TileWidthLatitude ;
+        //mD.DegreesPerMeterLatitude = 0.000008995f;//TileWidthLatitude / 2560.0f;
+        float rLat = MapCenterLatitude * Mathf.Deg2Rad;
+        MetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
+        MetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
+        DegreesPerMeterLongitude = 1.0f / MetersPerDegreeLongitude;
+        DegreesPerMeterLatitude = 1.0f / MetersPerDegreeLatitude;
+        TileWidthLongitude = DegreesPerMeterLongitude * TileWidth;
+        TileWidthLatitude = DegreesPerMeterLatitude * TileWidth;
+        Debug.Log("MetersPerDegree Longitude: " + MetersPerDegreeLongitude + " Latitude " + MetersPerDegreeLatitude + " degreesPerMeterLong " + DegreesPerMeterLongitude);
         mClientPosLongitude = -9999.0f;//Doing this as a flag to tell us we haven't done init yet - since 0.0 degrees longitude is possible. 
         mClientPosLatitude = 0.0f;//Is there a good reason these are in this struct though?
         mClientPosAltitude = 0.0f;
@@ -404,8 +406,8 @@ public class TerrainPager : MonoBehaviour
         findClientTile();
 
         string tileName = getTileName(mTileStartLongitude, mTileStartLatitude);
-        string heightfilename = mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
-        string texturefilename = mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
+        string heightfilename = TerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.TerrainPath.c_str(), tileName);
+        string texturefilename = TerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.TerrainPath.c_str(), tileName);
         TerrainData terrData;
         int alphaRes;
 
@@ -413,16 +415,16 @@ public class TerrainPager : MonoBehaviour
         //GridSize is the number of terrains you can fit within the tileLoadRadius from the center, so basically (2 * loadRadius)/tileWidth, 
         //Except, we want to limit gridsize to odd numbers, eg 3x3, 5x5, 7x7 etc. so that there will always be a center tile. 
 
-        mGridSize = 1 + (2 * ((int)(mTileLoadRadius / mTileWidth) + 1));
-        mGridMidpoint = (mGridSize - 1) / 2;
-        mTerrainGrid = new List<GameObject>();//mGridSize * mGridSize
+        GridSize = 1 + (2 * ((int)(TileLoadRadius / TileWidth) + 1));
+        mGridMidpoint = (GridSize - 1) / 2;
+        mTerrainGrid = new List<GameObject>();//GridSize * GridSize
         mTerrains = new List<GameObject>();
         mTerrainCoords = new List<Coordinates>();
         //mLoadedFeatures = new List<int>();
         //mRoadedTerrains = new List<int>();
         //First, fill up the mTerrainGrid array with blank GameObjects so we can reference any point in the array without hitting a null.
-        for (int y = 0; y < mGridSize; y++)
-            for (int x = 0; x < mGridSize; x++)
+        for (int y = 0; y < GridSize; y++)
+            for (int x = 0; x < GridSize; x++)
                 mTerrainGrid.Add(null);
 
         //Next, let's make sure we have a BaseTerrainObject, and if we do, make that mTerrain and also the center square of mTerrainGrid.
@@ -434,7 +436,7 @@ public class TerrainPager : MonoBehaviour
                 BaseTerrainObject.name = tileName;
                 terrData = BaseTerrain.terrainData;
                 mTerrain = BaseTerrainObject;
-                int index = (((int)(mGridSize / 2) * mGridSize) + ((int)(mGridSize / 2)));
+                int index = (((int)(GridSize / 2) * GridSize) + ((int)(GridSize / 2)));
                 mTerrainGrid[index] = BaseTerrainObject;//(the center square)
                 mTerrains.Add(BaseTerrainObject);
                 mTerrainCoords.Add(new Coordinates((double)mTileStartLongitude, (double)(mTileStartLatitude)));
@@ -453,18 +455,18 @@ public class TerrainPager : MonoBehaviour
         //loadTileGrid();
         mLoadStage = PagerLoadStage.NothingLoaded;
 
-        Debug.Log("Made terrainGrid, length " + mTerrainGrid.Count + " gridSize " + mGridSize + " terrains count: " + mTerrains.Count);
+        Debug.Log("Made terrainGrid, length " + mTerrainGrid.Count + " gridSize " + GridSize + " terrains count: " + mTerrains.Count);
 
-        if (mUseDataSource)
+        if (UseDataSource)
         {
-            mDataSource = new worldDataSource(false);
-            //mDataSource = new dataSource(false);
-            Debug.Log("new mDatasource!!! ... server = " + mDataSource.mServer.ToString());
-            mDataSource.Start();
+            DataSource = new worldDataSource(false);
+            //DataSource = new dataSource(false);
+            Debug.Log("new DataSource!!! ... server = " + DataSource.mServer.ToString());
+            DataSource.Start();
         }
         
-        float endLat = mTileStartLatitude + mTileWidthLatitude;
-        float endLong = mTileStartLongitude + mTileWidthLongitude;
+        float endLat = mTileStartLatitude + TileWidthLatitude;
+        float endLong = mTileStartLongitude + TileWidthLongitude;
         terrData = mTerrain.GetComponent<Terrain>().terrainData;
         alphaRes = terrData.alphamapResolution;
         tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
@@ -535,15 +537,15 @@ public class TerrainPager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (mDbCmd != null)
+        if (DbCmd != null)
         {
-            mDbCmd.Dispose();
-            mDbCmd = null;
+            DbCmd.Dispose();
+            DbCmd = null;
         }
-        if (mDbConn != null)
+        if (DbConn != null)
         {
-            mDbConn.Close();
-            mDbConn = null;
+            DbConn.Close();
+            DbConn = null;
         }
     }
 
@@ -593,10 +595,10 @@ public class TerrainPager : MonoBehaviour
             tData.SetAlphamaps(0, 0, data);
         }*/
 
-        if ((mUseDataSource) && (mDataSource.mCurrentTick <= 500))
+        if ((UseDataSource) && (DataSource.mCurrentTick <= 500))
         {
-            Debug.Log("mDatasource ticking... " + mDataSource.mCurrentTick.ToString());
-            mDataSource.tick();
+            Debug.Log("DataSource ticking... " + DataSource.mCurrentTick.ToString());
+            DataSource.tick();
         }
         
         switch (mLoadStage)
@@ -609,7 +611,7 @@ public class TerrainPager : MonoBehaviour
                 mLastTileStartLong = mTileStartLongitude;
                 mLastTileStartLat = mTileStartLatitude;
 
-                if (!mUseDataSource) //If not using data source, just page around the finished terrains.
+                if (!UseDataSource) //If not using data source, just page around the finished terrains.
                 {
                     mLoadStage = PagerLoadStage.PagerRunning;//10 is the holding pattern loop.
 
@@ -624,11 +626,11 @@ public class TerrainPager : MonoBehaviour
 
             case PagerLoadStage.DataSourceConnected:
 
-                if (mDataSource.mReadyForRequests)
+                if (DataSource.mReadyForRequests)
                 {
-                    mDataSource.addInitTerrainRequest();// (&mD, mD.mTerrainPath.c_str());
-                    mDataSource.addInitSkyboxRequest();// (mD.mSkyboxRes, 0, mD.mSkyboxPath.c_str());
-                    mSentInitRequests = true;
+                    DataSource.addInitTerrainRequest();// (&mD, mD.TerrainPath.c_str());
+                    DataSource.addInitSkyboxRequest();// (mD.mSkyboxRes, 0, mD.mSkyboxPath.c_str());
+                    SentInitRequests = true;
                     mLoadStage = PagerLoadStage.DataSourceReady;
                 }
                 break;
@@ -638,7 +640,7 @@ public class TerrainPager : MonoBehaviour
                 break;
 
             case PagerLoadStage.DataRequested:
-                if (mDataSource.mTerrainDone == true)
+                if (DataSource.mTerrainDone == true)
                 {
                     mLoadStage = PagerLoadStage.DataSourceReady;
                 }
@@ -653,7 +655,7 @@ public class TerrainPager : MonoBehaviour
                 break;
             //else if (mLoadState==4) //Waiting for skybox images.
             //{
-            //	if (mDataSource->mSkyboxDone==true)
+            //	if (DataSource->mSkyboxDone==true)
             //	{
             //		Con::printf("reloading skybox!!!!");
             //		reloadSkyboxImages(); //Rotate and flip the raw images from Flightgear to make them work in T3D skybox material.
@@ -685,7 +687,7 @@ public class TerrainPager : MonoBehaviour
                     mLastTileStartLong = mTileStartLongitude;
                     mLastTileStartLat = mTileStartLatitude;
 
-                    mTerrain = mTerrainGrid[(mGridMidpoint * mGridSize) + mGridMidpoint];
+                    mTerrain = mTerrainGrid[(mGridMidpoint * GridSize) + mGridMidpoint];
 
                 }
                 //else
@@ -695,26 +697,26 @@ public class TerrainPager : MonoBehaviour
                 //}
 
                 //Con::printf("terrain pager load state: %d sendControls %d skyboxInterval %d currentTick %d",
-                //	mLoadState,mDataSource->mSendControls,mSkyboxTickInterval,mCurrentTick);
+                //	mLoadState,DataSource->mSendControls,mSkyboxTickInterval,mCurrentTick);
 
-                if ((mUseDataSource) && (mDataSource.mSendControls == 1) &&
+                if ((UseDataSource) && (DataSource.mSendControls == 1) &&
                     ((int)mLastSkyboxTick < ((int)mCurrentTick - (int)mSkyboxTickInterval)) &&
-                    (mSentSkyboxRequest == false))
+                    (SentSkyboxRequest == false))
                 {
-                    mDataSource.addSkyboxRequest(mTileStartLongitude, mTileStartLatitude, mClientPosLongitude, mClientPosLatitude, mClientPosAltitude);
+                    DataSource.addSkyboxRequest(mTileStartLongitude, mTileStartLatitude, mClientPosLongitude, mClientPosLatitude, mClientPosAltitude);
                     //mLoadState = 4;
-                    mSentSkyboxRequest = true;
-                    mDataSource.mSkyboxDone = false;
+                    SentSkyboxRequest = true;
+                    DataSource.mSkyboxDone = false;
                     //mLastSkyboxTick = mCurrentTick;
                     mSkyboxRequestTick = mCurrentTick;
                     //Con::printf("adding a skybox request! ");
                 }
-                else if ((mSentSkyboxRequest) && //Either we're done, or we've waited too long and should give up on this one.
-                        ((mDataSource.mSkyboxDone) || ((int)mSkyboxRequestTick < ((int)mCurrentTick - (int)mSkyboxTickInterval))))
+                else if ((SentSkyboxRequest) && //Either we're done, or we've waited too long and should give up on this one.
+                        ((DataSource.mSkyboxDone) || ((int)mSkyboxRequestTick < ((int)mCurrentTick - (int)mSkyboxTickInterval))))
                 {
                     //Con::printf("reloading skybox!!!!");
                     //reloadSkyboxImages();
-                    mSentSkyboxRequest = false;
+                    SentSkyboxRequest = false;
                     mLastSkyboxTick = mCurrentTick;
                     mLoadStage = PagerLoadStage.SkyboxDataAvailable;//??
                 }
@@ -726,16 +728,16 @@ public class TerrainPager : MonoBehaviour
     
     void OpenDatabase()
     {        
-        string conn = "URI=file:" + Application.dataPath + "/" + mDbPath;//Will this break on build as well? Move to Resources?
-        mDbConn = (IDbConnection)new SqliteConnection(conn);
-        mDbConn.Open(); //Open connection to the database.
-        mDbCmd = mDbConn.CreateCommand();
+        string conn = "URI=file:" + Application.dataPath + "/" + DatabasePath;//Will this break on build as well? Move to Resources?
+        DbConn = (IDbConnection)new SqliteConnection(conn);
+        DbConn.Open(); //Open connection to the database.
+        DbCmd = DbConn.CreateCommand();
 
         //Load shapeFile prefabs
         //WARNING: FIX FIX FIX - this is loading the entire mapShapeFile, with no regard for what we are actually going to be using in this area
         string sqlQuery = "SELECT id, path FROM mapShapeFile;";//This could be a big waste of memory in the future.
-        mDbCmd.CommandText = sqlQuery;
-        IDataReader reader = mDbCmd.ExecuteReader();
+        DbCmd.CommandText = sqlQuery;
+        IDataReader reader = DbCmd.ExecuteReader();
         while (reader.Read())
         {
             int id = reader.GetInt32(0);
@@ -763,8 +765,8 @@ public class TerrainPager : MonoBehaviour
         int nodeId = 0;
 
         selectQuery = "SELECT id,latitude,longitude FROM mapNode WHERE name='" + tileName + "' AND type='Terrain';";//type='Terrain' is probably overkill, but why not.
-        mDbCmd.CommandText = selectQuery;
-        IDataReader reader = mDbCmd.ExecuteReader();
+        DbCmd.CommandText = selectQuery;
+        IDataReader reader = DbCmd.ExecuteReader();
         //Debug.Log(selectQuery);
         while (reader.Read())
         {
@@ -775,11 +777,11 @@ public class TerrainPager : MonoBehaviour
         reader.Close();
         
         selectQuery = "SELECT id,latitude,longitude,name FROM mapNode WHERE type='MapNode' AND latitude >= " + terrCoord.latitude +
-                      " AND latitude < " + (terrCoord.latitude + mTileWidthLatitude) + " AND longitude >= " +
-                      terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + mTileWidthLongitude) + ";";
+                      " AND latitude < " + (terrCoord.latitude + TileWidthLatitude) + " AND longitude >= " +
+                      terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + TileWidthLongitude) + ";";
         //Debug.Log("makeShapes: " + selectQuery);
-        mDbCmd.CommandText = selectQuery;
-        reader = mDbCmd.ExecuteReader();
+        DbCmd.CommandText = selectQuery;
+        reader = DbCmd.ExecuteReader();
         while (reader.Read())
         {
             //Playing fast and loose here but I KNOW I gave everybody a latitude and longitude...
@@ -801,9 +803,9 @@ public class TerrainPager : MonoBehaviour
 
             string shapeQuery = "SELECT * FROM mapShape WHERE node_id=" + nodeId + ";";
             //Debug.Log(shapeQuery);
-            IDbCommand mDbCmd2 = mDbConn.CreateCommand();
-            mDbCmd2.CommandText = shapeQuery;
-            IDataReader subReader = mDbCmd2.ExecuteReader();
+            IDbCommand DbCmd2 = DbConn.CreateCommand();
+            DbCmd2.CommandText = shapeQuery;
+            IDataReader subReader = DbCmd2.ExecuteReader();
             while (subReader.Read())
             {
                 Vector3 pos, scale;
@@ -839,14 +841,14 @@ public class TerrainPager : MonoBehaviour
                 //NOW, we have pos, rot and scale, and file id. I could have done this in the one query above but not sure how to mix joins with select *
                 //string pathQuery = "SELECT path FROM mapShapeFile WHERE id=" + file_id + ";";
                 //Debug.Log(pathQuery);
-                //IDbCommand mDbCmd3 = mDbConn.CreateCommand();
-                //mDbCmd3.CommandText = pathQuery;
-                //IDataReader subSubReader = mDbCmd3.ExecuteReader();
+                //IDbCommand DbCmd3 = DbConn.CreateCommand();
+                //DbCmd3.CommandText = pathQuery;
+                //IDataReader subSubReader = DbCmd3.ExecuteReader();
                 //subSubReader.Read();
                 //string path = subSubReader.GetString(subSubReader.GetOrdinal("path"));
                 //subSubReader.Close();
                 //subSubReader.Dispose();
-                //mDbCmd3.Dispose();
+                //DbCmd3.Dispose();
 
                 //if (path.Length == 0)
                 //    continue;
@@ -863,7 +865,7 @@ public class TerrainPager : MonoBehaviour
             }
             subReader.Close();
             subReader.Dispose();
-            mDbCmd2.Dispose();
+            DbCmd2.Dispose();
         }
         reader.Close();
 
@@ -904,7 +906,7 @@ public class TerrainPager : MonoBehaviour
     {
         Debug.Log("Import OpenStreetMap!!!!!!!!    " + osm_file);
 
-        if (mDbCmd == null)
+        if (DbCmd == null)
             return;
 
         XmlNode boundsNode;
@@ -937,8 +939,8 @@ public class TerrainPager : MonoBehaviour
                 
                 int nodeId = 0;
                 idQuery = "SELECT id FROM mapNode WHERE osm_id=" + osmId.ToString() + ";";
-                mDbCmd.CommandText = idQuery;
-                IDataReader reader = mDbCmd.ExecuteReader();
+                DbCmd.CommandText = idQuery;
+                IDataReader reader = DbCmd.ExecuteReader();
                 while (reader.Read())
                 {
                     try { nodeId = reader.GetInt32(0); }
@@ -949,8 +951,8 @@ public class TerrainPager : MonoBehaviour
                 {
                     insertQuery = "INSERT INTO mapNode (osm_id,latitude,longitude) VALUES (" + osmId.ToString() +
                                     "," + latitude.ToString() + "," + longitude.ToString() + ");";// ON CONFLICT (osm_id) DO NOTHING;";
-                    mDbCmd.CommandText = insertQuery;
-                    mDbCmd.ExecuteNonQuery();
+                    DbCmd.CommandText = insertQuery;
+                    DbCmd.ExecuteNonQuery();
                 }
                 Debug.Log("node type: " + nodeName + " latitude " + latitude + " longitude " + longitude);                
             }
@@ -964,8 +966,8 @@ public class TerrainPager : MonoBehaviour
 
                 int featureId = 0;
                 idQuery = "SELECT id FROM mapFeature WHERE osm_id=" + osmId.ToString() + ";";
-                mDbCmd.CommandText = idQuery;
-                IDataReader reader = mDbCmd.ExecuteReader();
+                DbCmd.CommandText = idQuery;
+                IDataReader reader = DbCmd.ExecuteReader();
                 while (reader.Read())
                 {
                     try { featureId = reader.GetInt32(0); }
@@ -975,12 +977,12 @@ public class TerrainPager : MonoBehaviour
                 if (featureId == 0)
                 {
                     insertQuery = "INSERT INTO mapFeature (osm_id) VALUES (" + osmId.ToString() + ");";
-                    mDbCmd.CommandText = insertQuery;
-                    mDbCmd.ExecuteNonQuery();
+                    DbCmd.CommandText = insertQuery;
+                    DbCmd.ExecuteNonQuery();
 
                     idQuery = "SELECT id FROM mapFeature WHERE osm_id=" + osmId + ";";
-                    mDbCmd.CommandText = idQuery;
-                    reader = mDbCmd.ExecuteReader();
+                    DbCmd.CommandText = idQuery;
+                    reader = DbCmd.ExecuteReader();
                     reader.Read();
                     featureId = reader.GetInt32(0);
                     reader.Close();
@@ -992,8 +994,8 @@ public class TerrainPager : MonoBehaviour
                     {
                         long nodeOsmId = Convert.ToInt64(childNode.Attributes["ref"]?.InnerText);//Hm, what's the easy simple fast way to get the corresponding node id
                         insertQuery = "INSERT INTO mapFeatureNode (feature_id,node_osm_id) VALUES (" + featureId + "," + nodeOsmId + ");";//  for this osm id?
-                        mDbCmd.CommandText = insertQuery;
-                        mDbCmd.ExecuteNonQuery();
+                        DbCmd.CommandText = insertQuery;
+                        DbCmd.ExecuteNonQuery();
                     }
                     else if (childNode.Name.Equals("tag"))
                     {
@@ -1011,8 +1013,8 @@ public class TerrainPager : MonoBehaviour
                         if (updateQuery.Length  > 0)
                         {
                             Debug.Log(updateQuery);
-                            mDbCmd.CommandText = updateQuery;
-                            mDbCmd.ExecuteNonQuery();
+                            DbCmd.CommandText = updateQuery;
+                            DbCmd.ExecuteNonQuery();
                         }
 
                     }
@@ -1022,8 +1024,8 @@ public class TerrainPager : MonoBehaviour
                     //string cleanOsmIDs = osmIDsString.Remove(osmIDsString.Length - 1);//Remove final comma.
                     //updateQuery = "UPDATE mapNode SET feature_id=" + featureId + " WHERE osm_id IN (" + cleanOsmIDs + ");";
                     //Debug.Log(updateQuery);
-                   // mDbCmd.CommandText = updateQuery;
-                    //mDbCmd.ExecuteNonQuery();
+                   // DbCmd.CommandText = updateQuery;
+                    //DbCmd.ExecuteNonQuery();
                 //}
             }            
         }        
@@ -1035,7 +1037,7 @@ public class TerrainPager : MonoBehaviour
 	if (!mSQL->OpenDatabase(map_db))
 		return;
 	
-	mDbPath = map_db;
+	DatabasePath = map_db;
 
 	std::ostringstream insert_query;
     char select_query[512], update_query[255], total_queries[56000];
@@ -1735,15 +1737,15 @@ mSQL->CloseDatabase();
     private void FindClientPos()
     {
         //First, decide if we have a player or a camera, and go with one.
-        if (mPlayer != null)
-            mClientPos = mPlayer.transform.position;
-        else if (mCamera != null)
-            mClientPos = mCamera.transform.position;
+        if (PlayerObject != null)
+            mClientPos = PlayerObject.transform.position;
+        else if (CameraObject != null)
+            mClientPos = CameraObject.transform.position;
         else //HERE: do a search for any active player or object with a "MainCamera" tag...? Make sure it's locally owned.
             return;
         
-        mClientPosLongitude = mMapCenterLongitude + (mClientPos.x * mDegreesPerMeterLongitude);
-        mClientPosLatitude  = mMapCenterLatitude + (mClientPos.z * mDegreesPerMeterLatitude);
+        mClientPosLongitude = MapCenterLongitude + (mClientPos.x * DegreesPerMeterLongitude);
+        mClientPosLatitude  = MapCenterLatitude + (mClientPos.z * DegreesPerMeterLatitude);
         mClientPosAltitude  = mClientPos.y;
     }
 
@@ -1754,14 +1756,14 @@ mSQL->CloseDatabase();
         Vector2 clientPos = new Vector2(mClientPosLongitude, mClientPosLatitude);
         //FIX: The following is off by one half tile width because of my (perhaps questionable) decision to put 
         //map center in the center of a tile rather than at the lower left corner of that tile. Subject to review.
-        Vector2 centerTileStart = new Vector2(mMapCenterLongitude - (mTileWidthLongitude / 2.0f),
-                                    mMapCenterLatitude - (mTileWidthLatitude / 2.0f));
+        Vector2 centerTileStart = new Vector2(MapCenterLongitude - (TileWidthLongitude / 2.0f),
+                                    MapCenterLatitude - (TileWidthLatitude / 2.0f));
 
         //mLastTileStartLong = mTileStartLongitude;
         //mLastTileStartLat = mTileStartLatitude;
-        mTileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / mTileWidthLongitude) * mTileWidthLongitude) + centerTileStart.x;
-        mTileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / mTileWidthLatitude) * mTileWidthLatitude) + centerTileStart.y;
-        //Debug.Log("Tile Width Longitude: " + (mD.mTileWidthLongitude / 2.0f) + "  mapCenter " + mD.mMapCenterLongitude + " , " + mD.mMapCenterLatitude  + "  centerTileStart " + centerTileStart.x + " , " + centerTileStart.y);
+        mTileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / TileWidthLongitude) * TileWidthLongitude) + centerTileStart.x;
+        mTileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / TileWidthLatitude) * TileWidthLatitude) + centerTileStart.y;
+        //Debug.Log("Tile Width Longitude: " + (mD.TileWidthLongitude / 2.0f) + "  mapCenter " + mD.MapCenterLongitude + " , " + mD.MapCenterLatitude  + "  centerTileStart " + centerTileStart.x + " , " + centerTileStart.y);
     }
 
     public Coordinates FindTileCoords(Vector3 pos)
@@ -1771,11 +1773,11 @@ mSQL->CloseDatabase();
 
         //FIX: The following is off by one half tile width because of my (perhaps questionable) decision to put 
         //map center in the center of a tile rather than at the lower left corner of that tile. Subject to review.
-        Vector2 mapCenter = new Vector2(mMapCenterLongitude - (mTileWidthLongitude / 2.0f),
-                                    mMapCenterLatitude - (mTileWidthLatitude / 2.0f));
+        Vector2 mapCenter = new Vector2(MapCenterLongitude - (TileWidthLongitude / 2.0f),
+                                    MapCenterLatitude - (TileWidthLatitude / 2.0f));
 
-        double tileStartLongitude = (Math.Floor((latLongPos.longitude - mapCenter.x) / mTileWidthLongitude) * mTileWidthLongitude) + mapCenter.x;
-        double tileStartLatitude = (Math.Floor((latLongPos.latitude - mapCenter.y) / mTileWidthLatitude) * mTileWidthLatitude) + mapCenter.y;
+        double tileStartLongitude = (Math.Floor((latLongPos.longitude - mapCenter.x) / TileWidthLongitude) * TileWidthLongitude) + mapCenter.x;
+        double tileStartLatitude = (Math.Floor((latLongPos.latitude - mapCenter.y) / TileWidthLatitude) * TileWidthLatitude) + mapCenter.y;
 
         return new Coordinates(tileStartLongitude, tileStartLatitude);    
     }
@@ -1789,34 +1791,34 @@ mSQL->CloseDatabase();
         //List<loadTerrainData> loadTerrains = new List<loadTerrainData>();//This is a list of the coords and distances for each terrain 
                                                 //that we need to request from the worldServer.
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * mTileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * mTileWidthLatitude);
+        float startLong = mTileStartLongitude - (mGridMidpoint * TileWidthLongitude);
+        float startLat = mTileStartLatitude - (mGridMidpoint * TileWidthLatitude);
         Debug.Log("loading tile grid, client pos " + mClientPosLongitude + " " + mClientPosLatitude + ", client tile start " +
               mTileStartLongitude + " " + mTileStartLatitude + " local grid start " + startLong + " " + startLat);
 
        
-        for (int y = 0; y < mGridSize; y++)
+        for (int y = 0; y < GridSize; y++)
         {
-            for (int x = 0; x < mGridSize; x++)
+            for (int x = 0; x < GridSize; x++)
             {
-                double kLong = startLong + (x * mTileWidthLongitude);
-                double kLat = startLat + (y * mTileWidthLatitude);
-                float midLong = (float)kLong + (mTileWidthLongitude / 2.0f);
-                float midLat = (float)kLat + (mTileWidthLatitude / 2.0f);
-                Vector2 tileCenterDiff = new Vector2((mClientPosLongitude - midLong) * mMetersPerDegreeLongitude,
-                                              (mClientPosLatitude - midLat) * mMetersPerDegreeLatitude);
+                double kLong = startLong + (x * TileWidthLongitude);
+                double kLat = startLat + (y * TileWidthLatitude);
+                float midLong = (float)kLong + (TileWidthLongitude / 2.0f);
+                float midLat = (float)kLat + (TileWidthLatitude / 2.0f);
+                Vector2 tileCenterDiff = new Vector2((mClientPosLongitude - midLong) * MetersPerDegreeLongitude,
+                                              (mClientPosLatitude - midLat) * MetersPerDegreeLatitude);
                 float tileDistance = tileCenterDiff.magnitude;
 
                 tileName = getTileName((float)kLong, (float)kLat);
-                heightfilename = mTerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.mTerrainPath.c_str(), tileName);
-                texturefilename = mTerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.mTerrainPath.c_str(), tileName);
-                //terrainfilename = mD.mTerrainPath + "terrain." + tileName + ".ter";// sprintf(terrainfilename, "%sterrain.%s.ter", mD.mTerrainPath.c_str(), tileName);
+                heightfilename = TerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.TerrainPath.c_str(), tileName);
+                texturefilename = TerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.TerrainPath.c_str(), tileName);
+                //terrainfilename = mD.TerrainPath + "terrain." + tileName + ".ter";// sprintf(terrainfilename, "%sterrain.%s.ter", mD.TerrainPath.c_str(), tileName);
 
                 //New way: we are guaranteeing that the center tile is loaded, so now we should try to load the other eight, or however many.
                 if ((y == mGridMidpoint) && (x == mGridMidpoint))
                 {
                     //Debug.Log("We are on the center tile!");
-                    mTerrain = mTerrainGrid[y * mGridSize + x];
+                    mTerrain = mTerrainGrid[y * GridSize + x];
                 }
                 else
                 {
@@ -1824,7 +1826,7 @@ mSQL->CloseDatabase();
                     {
                         //Debug.Log("Adding terrain tile: " + heightfilename);
                         if (File.Exists(heightfilename))
-                            mTerrainGrid[y * mGridSize + x] = addTerrainBlock((float)kLong, (float)kLat);
+                            mTerrainGrid[y * GridSize + x] = addTerrainBlock((float)kLong, (float)kLat);
                     }
                     else
                         Debug.Log("Couldn't find terrain height bin file: " + heightfilename + " kLong " + kLong + " kLat " + kLat );
@@ -1848,11 +1850,11 @@ mSQL->CloseDatabase();
      * 
      * 
 //First we need to clear the grid, *then* go ahead and fill it again. ???
-//for (int y = 0; y < mGridSize; y++)
+//for (int y = 0; y < GridSize; y++)
 //{
-//    for (int x = 0; x < mGridSize; x++)
+//    for (int x = 0; x < GridSize; x++)
 //    {
-//        mTerrainGrid[y * mGridSize + x] = null;
+//        mTerrainGrid[y * GridSize + x] = null;
 //    }
 //}
 
@@ -1862,7 +1864,7 @@ mSQL->CloseDatabase();
 
 
 
-    if (mTerrainGrid[y * mGridSize + x] == null) loaded = false;
+    if (mTerrainGrid[y * GridSize + x] == null) loaded = false;
     else loaded = true;
 
     if ((tileDistance < mD.mTileLoadRadius) && (loaded == false))
@@ -1873,7 +1875,7 @@ mSQL->CloseDatabase();
             if ((Math.Abs(coordPos.x - kLong) < 0.0001) && (Math.Abs(coordPos.y - kLat) < 0.0001))
             {//("<0.0001" because "==" doesn't work, floating point error is annoying.)
                 loaded = true;
-                mTerrainGrid[y * mGridSize + x] = mTerrains[c];
+                mTerrainGrid[y * GridSize + x] = mTerrains[c];
                 //if (verbose)
                 Debug.Log("terrain " + x + " " + y + " loaded = " + coordPos.ToString());
             }
@@ -1883,13 +1885,13 @@ mSQL->CloseDatabase();
             if (File.Exists(heightfilename))// ||
                                             //((File.Exists(terrainfilename )) && (File.Exists(texturefilename))))
             {                            
-                mTerrainGrid[y * mGridSize + x] = addTerrainBlock(kLong, kLat);
+                mTerrainGrid[y * GridSize + x] = addTerrainBlock(kLong, kLat);
 
             }
 
             //else if (mUseDataSource)//okay, now we need to make a call to worldDataSource.
             //{//HERE: I need to request ONE AT A TIME. And keep coming back here until they're all done.
-            //    loadTerrainData* kData = &(loadTerrains[y * mGridSize + x]);
+            //    loadTerrainData* kData = &(loadTerrains[y * GridSize + x]);
             //    kData->startLongitude = kLong;
             //    kData->startLatitude = kLat;
             //    kData->tileDistance = tileDistance;
@@ -1906,7 +1908,7 @@ mSQL->CloseDatabase();
     }
 
     if ((x == gridMidpoint) && (y == gridMidpoint))
-        mTerrain = mTerrainGrid[y * mGridSize + x];
+        mTerrain = mTerrainGrid[y * GridSize + x];
 
 }
 }
@@ -1916,9 +1918,9 @@ mSQL->CloseDatabase();
     for (int c = 0; c < mTerrains.Count; c++)
     {
         //if ((mTerrains[c].mLongitude < startLong) ||
-        //    (mTerrains[c].mLongitude >= (startLong + (mGridSize * mD.mTileWidthLongitude))) ||
+        //    (mTerrains[c].mLongitude >= (startLong + (GridSize * mD.TileWidthLongitude))) ||
         //    (mTerrains[c].mLatitude < startLat) ||
-        //    (mTerrains[c].mLatitude >= (startLat + (mGridSize * mD.mTileWidthLatitude))))
+        //    (mTerrains[c].mLatitude >= (startLat + (GridSize * mD.TileWidthLatitude))))
         //{
         //    dropTerrainBlock(c);
         //}
@@ -1946,7 +1948,7 @@ mSQL->CloseDatabase();
         if (closestIndex >= 0)
         {
             kData = loadTerrains[closestIndex];
-            //mDataSource.addTerrainRequest(kData.startLongitude, kData.startLatitude);//FIX: need worldDataSource now!
+            //DataSource.addTerrainRequest(kData.startLongitude, kData.startLatitude);//FIX: need worldDataSource now!
             mTerrainRequestTick = mCurrentTick;
         }
     }*/
@@ -1963,39 +1965,39 @@ mSQL->CloseDatabase();
 
     private void checkTileGrid()
     {
-        if (mTileWidthLongitude == 0)
+        if (TileWidthLongitude == 0)
             return;//FIX: something is breaking horribly before here, getting NaN for mTileStartLongitude, etc.
         //bool verbose = false;
         string tileName, heightfilename, texturefilename;
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * mTileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * mTileWidthLatitude);
+        float startLong = mTileStartLongitude - (mGridMidpoint * TileWidthLongitude);
+        float startLat = mTileStartLatitude - (mGridMidpoint * TileWidthLatitude);
         //Debug.Log("checkTileGrid -  startLong " + startLong + " startLat " + startLat + " tileStartLong " + mTileStartLongitude +
-        //        " tileWidthLong " + mD.mTileWidthLongitude + " midpoint " + mGridMidpoint);
-        for (int y = 0; y < mGridSize; y++)
+        //        " tileWidthLong " + mD.TileWidthLongitude + " midpoint " + mGridMidpoint);
+        for (int y = 0; y < GridSize; y++)
         {
-            for (int x = 0; x < mGridSize; x++)
+            for (int x = 0; x < GridSize; x++)
             {
                 bool loaded = false;
-                float kLong = startLong + (x * mTileWidthLongitude);
-                float kLat = startLat + (y * mTileWidthLatitude);
-                float midLong = kLong + (mTileWidthLongitude / 2.0f);
-                float midLat = kLat + (mTileWidthLatitude / 2.0f);
+                float kLong = startLong + (x * TileWidthLongitude);
+                float kLat = startLat + (y * TileWidthLatitude);
+                float midLong = kLong + (TileWidthLongitude / 2.0f);
+                float midLat = kLat + (TileWidthLatitude / 2.0f);
 
-                //Vector2 tileCenterDiff = new Vector2((mD.mClientPosLongitude - midLong) * mD.mMetersPerDegreeLongitude,
-                //                              (mD.mClientPosLatitude - midLat) * mD.mMetersPerDegreeLatitude);
+                //Vector2 tileCenterDiff = new Vector2((mD.mClientPosLongitude - midLong) * mD.MetersPerDegreeLongitude,
+                //                              (mD.mClientPosLatitude - midLat) * mD.MetersPerDegreeLatitude);
                 //float tileDistance = tileCenterDiff.magnitude;
 
                 tileName = getTileName(kLong, kLat);
-                heightfilename = mTerrainPath + "hght." + tileName + ".bin";
-                texturefilename = mTerrainPath + "text." + tileName + ".bin";
+                heightfilename = TerrainPath + "hght." + tileName + ".bin";
+                texturefilename = TerrainPath + "text." + tileName + ".bin";
 
 
                 for (int c=0; c<mTerrains.Count; c++)
                 {
                     if (mTerrains[c].name.Equals(tileName))
                     {
-                        mTerrainGrid[y * mGridSize + x] = mTerrains[c];
+                        mTerrainGrid[y * GridSize + x] = mTerrains[c];
                         loaded = true;
                         //Debug.Log("Terrain tile already loaded: " + tileName);
                     }
@@ -2004,7 +2006,7 @@ mSQL->CloseDatabase();
                 if (loaded == false)
                 {
                     //Debug.Log("Terrain tile NOT loaded, adding it now: " + tileName);
-                    mTerrainGrid[y * mGridSize + x] = addTerrainBlock(kLong, kLat);
+                    mTerrainGrid[y * GridSize + x] = addTerrainBlock(kLong, kLat);
 
                 }
 
@@ -2014,15 +2016,15 @@ mSQL->CloseDatabase();
 
     /*
     //Whoops, need a new way to do this if I create legal GameObjects at start to fill the array.
-    if (mTerrainGrid[y * mGridSize + x] != null)
+    if (mTerrainGrid[y * GridSize + x] != null)
     {
-        Terrain terr = mTerrainGrid[y * mGridSize + x].GetComponent<Terrain>();
+        Terrain terr = mTerrainGrid[y * GridSize + x].GetComponent<Terrain>();
         if (terr != null)
         {
             //if (terr.transform.position - )
         }
     }
-    //if (mTerrainGrid[y * mGridSize + x].transform.position.magnitude == 0.0f) loaded = false;
+    //if (mTerrainGrid[y * GridSize + x].transform.position.magnitude == 0.0f) loaded = false;
     //else loaded = true;
 
     //Debug.Log("Checking for height file: " + heightfilename);
@@ -2030,10 +2032,10 @@ mSQL->CloseDatabase();
     {
         Debug.Log("tile " + x + " " + y + " should be loaded, but isn't. dist " + tileDistance + ", " + kLong + " " + kLat);
         if ((File.Exists(heightfilename)) && (File.Exists(texturefilename)))
-            mTerrainGrid[y * mGridSize + x] = addTerrainBlock(kLong, kLat);
+            mTerrainGrid[y * GridSize + x] = addTerrainBlock(kLong, kLat);
         else if (mUseDataSource)
         {
-            mDataSource.addTerrainRequest(kLong, kLat);
+            DataSource.addTerrainRequest(kLong, kLat);
             mLoadStage = PagerLoadStage.DataRequested;//waiting for terrain.
         }
     }
@@ -2063,17 +2065,17 @@ mSQL->CloseDatabase();
         TerrainData terrData = new TerrainData();
         
         tileName = getTileName(startLong, startLat);
-        heightfilename = mTerrainPath + "hght." + tileName + ".bin";
-        texturefilename = mTerrainPath + "text." + tileName + ".bin";
+        heightfilename = TerrainPath + "hght." + tileName + ".bin";
+        texturefilename = TerrainPath + "text." + tileName + ".bin";
         //terrainName = "terrain." + tileName + ".ter";
-        //terrFileName = mD.mTerrainPath + terrainName;
+        //terrFileName = mD.TerrainPath + terrainName;
         TerrainObj.name = tileName;
 
         //HERE: upsert a mapNode, type = Terrain, name = tileName, lat/long saved as floats.
         int nodeId = 0;
         string idQuery = "SELECT id FROM mapNode WHERE name='" + tileName + "';";
-        mDbCmd.CommandText = idQuery;
-        IDataReader reader = mDbCmd.ExecuteReader();
+        DbCmd.CommandText = idQuery;
+        IDataReader reader = DbCmd.ExecuteReader();
         while (reader.Read())
         {
             try { nodeId = reader.GetInt32(0); }
@@ -2084,14 +2086,14 @@ mSQL->CloseDatabase();
         { 
             string insertQuery = "INSERT INTO mapNode (latitude,longitude,name,type) VALUES (" + startLat + "," + startLong +
                              ",'" + tileName + "','Terrain');";
-            mDbCmd.CommandText = insertQuery;
-            mDbCmd.ExecuteNonQuery();
+            DbCmd.CommandText = insertQuery;
+            DbCmd.ExecuteNonQuery();
         }
         TerrainCollider terrCollider = TerrainObj.AddComponent<TerrainCollider>();
         Terrain terr = TerrainObj.AddComponent<Terrain>();
 
-        TerrainObj.transform.position = new Vector3(((startLong - mMapCenterLongitude) * mMetersPerDegreeLongitude), 0.0f,
-                (startLat - mMapCenterLatitude) * mMetersPerDegreeLatitude);
+        TerrainObj.transform.position = new Vector3(((startLong - MapCenterLongitude) * MetersPerDegreeLongitude), 0.0f,
+                (startLat - MapCenterLatitude) * MetersPerDegreeLatitude);
         TerrainObj.name = tileName;
 
         mTerrains.Add(TerrainObj);
@@ -2100,11 +2102,9 @@ mSQL->CloseDatabase();
 
         string assetName = "terrain." + tileName + ".asset";
         string baseAssetName = "Terrain/terrain." + tileName;//extension must be omitted! //Terrain/
-        //Debug.Log("****************** LOOKING FOR TERRAIN '" + mD.mResourcePath + assetName + "':  " + File.Exists(mD.mResourcePath + assetName).ToString());
-        //Debug.Log("****************** LOOKING FOR TERRAIN " + baseAssetName);
         UnityEngine.Object terrAsset = Resources.Load(baseAssetName);
 
-        if (terrAsset != null)//(File.Exists(mD.mResourcePath + assetName))
+        if (terrAsset != null)
         {
             //Debug.Log("****************** FOUND ASSET FILE!!!!");
             terrData = (TerrainData)Instantiate(terrAsset);
@@ -2112,8 +2112,8 @@ mSQL->CloseDatabase();
             terr.terrainData = terrData;
             terr.GetComponent<TerrainCollider>().terrainData = terrData;
             int index = mTerrains.FindIndex(x => x.Equals(TerrainObj));
-            float endLat = startLat + mTileWidthLatitude;
-            float endLong = startLong + mTileWidthLongitude;
+            float endLat = startLat + TileWidthLatitude;
+            float endLong = startLong + TileWidthLongitude;
             
             //Okay, HERE: we really need a way to detect the flat terrains we are accidentally creating wherever we lack data.
             //We could go fix the original problem and delete remaining ones manually, but I kind of like them as opposed to empty space.
@@ -2161,12 +2161,12 @@ mSQL->CloseDatabase();
 
             int index = mTerrains.FindIndex(x => x.Equals(terr));
             //mRoadedTerrains.Add(index);//Hm, do we need this anymore, if we always make roads on loading each tile?
-            //float endLat = mTileStartLatitude + mD.mTileWidthLatitude;
-            //float endLong = mTileStartLongitude + mD.mTileWidthLongitude;
+            //float endLat = mTileStartLatitude + mD.TileWidthLatitude;
+            //float endLong = mTileStartLongitude + mD.TileWidthLongitude;
             ////MakeRoads(new Vector2(mTileStartLongitude, mTileStartLatitude), new Vector2(endLong, endLat));
 
-            float endLat = startLat + mTileWidthLatitude;
-            float endLong = startLong + mTileWidthLongitude;
+            float endLat = startLat + TileWidthLatitude;
+            float endLong = startLong + TileWidthLongitude;
             //if (convertRoads) ConvertRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat), index);//TEMP, ROADS
             //if (makeRoads) MakeRoads(new Vector2(startLong, startLat), new Vector2(endLong, endLat),index);//TEMP, ROADS
             MakeForest(terr);
@@ -2318,27 +2318,27 @@ mSQL->CloseDatabase();
     public Vector3 ConvertLatLongToXYZ(Vector3 pos)
     {
         Vector3 newPos;
-        newPos.x = (pos.x -mMapCenterLongitude) * mMetersPerDegreeLongitude;
+        newPos.x = (pos.x -MapCenterLongitude) * MetersPerDegreeLongitude;
         newPos.y = pos.y;
-        newPos.z = (pos.z - mMapCenterLatitude) * mMetersPerDegreeLatitude; 
+        newPos.z = (pos.z - MapCenterLatitude) * MetersPerDegreeLatitude; 
         return newPos;
     }
 
     public Vector3 ConvertLatLongToXYZ(double longitude, float altitude, double latitude)
     {
         Vector3 newPos;
-        newPos.x = (float)((longitude - (double)mMapCenterLongitude) * (double)mMetersPerDegreeLongitude);
+        newPos.x = (float)((longitude - (double)MapCenterLongitude) * (double)MetersPerDegreeLongitude);
         newPos.y = altitude; 
-        newPos.z = (float)((latitude - (double)mMapCenterLatitude) * (double)mMetersPerDegreeLatitude);
+        newPos.z = (float)((latitude - (double)MapCenterLatitude) * (double)MetersPerDegreeLatitude);
         return newPos;
     }
 
     public Coordinates ConvertXYZToLatLong(Vector3 pos)
     {
         Coordinates newPos = new Coordinates();
-        newPos.longitude = (double)(mMapCenterLongitude + (pos.x * mDegreesPerMeterLongitude));
+        newPos.longitude = (double)(MapCenterLongitude + (pos.x * DegreesPerMeterLongitude));
         //newPos.y = pos.y;
-        newPos.latitude = (double)(mMapCenterLatitude + (pos.z * mDegreesPerMeterLatitude));
+        newPos.latitude = (double)(MapCenterLatitude + (pos.z * DegreesPerMeterLatitude));
         return newPos;
     }
     
@@ -2447,7 +2447,7 @@ mSQL->CloseDatabase();
         Vector3 terrLowLeft = ConvertLatLongToXYZ((double)lowerLeft.x, 0, (double)lowerLeft.y);
         Vector3 terrUpRight = ConvertLatLongToXYZ((double)upperRight.x, 0, (double)upperRight.y);
 
-        if (mDbCmd != null)
+        if (DbCmd != null)
         {
             int f_id;
             double lon, lat;
@@ -2473,8 +2473,8 @@ mSQL->CloseDatabase();
                 " ORDER BY f.id;";            
 
             Debug.Log(selectQuery);
-            mDbCmd.CommandText = selectQuery;
-            IDataReader reader = mDbCmd.ExecuteReader();
+            DbCmd.CommandText = selectQuery;
+            IDataReader reader = DbCmd.ExecuteReader();
             while (reader.Read())
             {
                 //lon = Double.Parse(reader["longitude"].ToString());
@@ -2559,8 +2559,8 @@ mSQL->CloseDatabase();
                 " JOIN mapFeature f ON f.id = fn.feature_id" +
                 " WHERE fn.feature_id IN (" + feature_list + ");";
             Debug.Log(selectQuery);
-            mDbCmd.CommandText = selectQuery;
-            reader = mDbCmd.ExecuteReader();
+            DbCmd.CommandText = selectQuery;
+            reader = DbCmd.ExecuteReader();
             while (reader.Read())
             {
                 lon = Double.Parse(reader["longitude"].ToString());
@@ -2589,8 +2589,8 @@ mSQL->CloseDatabase();
                                                         
             //Now, separate out the duplicates, and see if we have a valid X or T intersection. 
             //Then, decide which roads attach to which connection nodes, and determine the optimal Y rotation.
-            mDbCmd.CommandText = selectQuery;
-            reader = mDbCmd.ExecuteReader();  
+            DbCmd.CommandText = selectQuery;
+            reader = DbCmd.ExecuteReader();  
             while (reader.Read())
             {
                 long node_id = Int64.Parse(reader["node_id"].ToString());
@@ -3326,12 +3326,12 @@ mSQL->CloseDatabase();
 
                         //HERE: check to see if it exists first! But this requires more information, feature id isn't enough.
                         insertQuery = "INSERT INTO erRoad (feature_id,road_type_id) VALUES (" + ftr.id + "," + type_id + ");";
-                        mDbCmd.CommandText = insertQuery;
-                        mDbCmd.ExecuteNonQuery();
+                        DbCmd.CommandText = insertQuery;
+                        DbCmd.ExecuteNonQuery();
 
                         lastIdQuery = "SELECT last_insert_rowid();";
-                        mDbCmd.CommandText = lastIdQuery;
-                        reader = mDbCmd.ExecuteReader();
+                        DbCmd.CommandText = lastIdQuery;
+                        reader = DbCmd.ExecuteReader();
                         reader.Read();
                         road_id = reader.GetInt32(0);
                         reader.Close();
@@ -3340,13 +3340,13 @@ mSQL->CloseDatabase();
                         {
                             Vector3 p = markerList[d];                            
                             insertQuery = "INSERT INTO erRoadMarker (road_id,pos_x,pos_y,pos_z) VALUES (" + road_id + "," + p.x + "," + p.y + "," + p.z + ");";
-                            mDbCmd.CommandText = insertQuery;
-                            mDbCmd.ExecuteNonQuery();
+                            DbCmd.CommandText = insertQuery;
+                            DbCmd.ExecuteNonQuery();
 
                             if ((d == 0) || (d == markerList.Count - 1))//save ids for the beginning and end nodes.
                             {
-                                mDbCmd.CommandText = lastIdQuery;
-                                reader = mDbCmd.ExecuteReader();
+                                DbCmd.CommandText = lastIdQuery;
+                                reader = DbCmd.ExecuteReader();
                                 reader.Read();
                                 if (d == 0)
                                     start_id = reader.GetInt32(0);
@@ -3376,8 +3376,8 @@ mSQL->CloseDatabase();
                             int conn_id = 0;
                             selectQuery = "SELECT id FROM erConnection WHERE pos_x=" + startFC.pos.x + " AND pos_y=" + startFC.pos.y +
                                 " AND pos_z=" + startFC.pos.z + ";";
-                            mDbCmd.CommandText = selectQuery;
-                            reader = mDbCmd.ExecuteReader();
+                            DbCmd.CommandText = selectQuery;
+                            reader = DbCmd.ExecuteReader();
                             if (reader.Read())
                                 conn_id = reader.GetInt32(0);
                             reader.Close();
@@ -3385,16 +3385,16 @@ mSQL->CloseDatabase();
                             if (conn_id > 0)
                             {
                                 updateQuery = "UPDATE erConnection SET node_" + connIndex + "=" + start_id + " WHERE id=" + conn_id + ";";
-                                mDbCmd.CommandText = updateQuery;
-                                mDbCmd.ExecuteNonQuery();
+                                DbCmd.CommandText = updateQuery;
+                                DbCmd.ExecuteNonQuery();
                             }
                             else
                             {
                                 insertQuery = "INSERT INTO erConnection (connection_type_id,pos_x,pos_y,pos_z,rot_y,node_" + connIndex + ")" +
                                     " VALUES (" + startConnType + "," + startFC.pos.x + "," + startFC.pos.y + "," + startFC.pos.z + "," +
                                     startFC.rot + "," + start_id + ");";
-                                mDbCmd.CommandText = insertQuery;
-                                mDbCmd.ExecuteNonQuery();
+                                DbCmd.CommandText = insertQuery;
+                                DbCmd.ExecuteNonQuery();
                             }
                             
                             //try { mRoad.ConnectToStart(startConn, connIndex); }
@@ -3420,8 +3420,8 @@ mSQL->CloseDatabase();
                             int conn_id = 0;
                             selectQuery = "SELECT id FROM erConnection WHERE pos_x=" + endFC.pos.x + " AND pos_y=" + endFC.pos.y +
                                 " AND pos_z=" + endFC.pos.z + ";";
-                            mDbCmd.CommandText = selectQuery;
-                            reader = mDbCmd.ExecuteReader();
+                            DbCmd.CommandText = selectQuery;
+                            reader = DbCmd.ExecuteReader();
                             if (reader.Read())
                                 conn_id = reader.GetInt32(0);
                             reader.Close();
@@ -3434,8 +3434,8 @@ mSQL->CloseDatabase();
                                 insertQuery = "INSERT INTO erConnection (connection_type_id,pos_x,pos_y,pos_z,rot_y,node_" + connIndex + ")" +
                                 " VALUES (" + endConnType + "," + endFC.pos.x + "," + endFC.pos.y + "," + endFC.pos.z + "," +
                                 endFC.rot + "," + end_id + ");";
-                                mDbCmd.CommandText = insertQuery;
-                                mDbCmd.ExecuteNonQuery();
+                                DbCmd.CommandText = insertQuery;
+                                DbCmd.ExecuteNonQuery();
                             }
 
                             //try { mRoad.ConnectToEnd(endConn, connIndex); }
@@ -3487,7 +3487,7 @@ mSQL->CloseDatabase();
         ERRoadType roadType;
         ERConnection sourceConn;
 
-        if (mDbCmd != null)
+        if (DbCmd != null)
         {
             string selectQuery, insertQuery, updateQuery, lastIdQuery;
             string roadName;
@@ -3506,8 +3506,8 @@ mSQL->CloseDatabase();
                     " ORDER BY r.id;";
 
             //Debug.Log(selectQuery);
-            mDbCmd.CommandText = selectQuery;
-            reader = mDbCmd.ExecuteReader();
+            DbCmd.CommandText = selectQuery;
+            reader = DbCmd.ExecuteReader();
             while (reader.Read())
             {
                 float x, y, z, rx, ry, rz;
@@ -3610,8 +3610,8 @@ mSQL->CloseDatabase();
                 " WHERE pos_x >= " + terrLowLeft.x + " AND pos_x<" + terrUpRight.x +
                 " AND pos_z>=" + terrLowLeft.z + " AND pos_z<" + terrUpRight.z + ";";
             Debug.Log(selectQuery);
-            mDbCmd.CommandText = selectQuery;
-            reader = mDbCmd.ExecuteReader();
+            DbCmd.CommandText = selectQuery;
+            reader = DbCmd.ExecuteReader();
             while (reader.Read())
             {
                 int id, connection_type, node_0, node_1, node_2, node_3;
@@ -4269,7 +4269,7 @@ mSQL->CloseDatabase();
 
         checkTileGrid();
 
-        Debug.Log("Started terrain pager!!! degreesPerMeterLong " + mDegreesPerMeterLongitude);
+        Debug.Log("Started terrain pager!!! degreesPerMeterLong " + DegreesPerMeterLongitude);
 
     }
 
@@ -4401,8 +4401,8 @@ Debug.Log(selectQuery);
 
 //selectQuery = "SELECT id,osm_id,name FROM osmNode WHERE id<10;";
 //selectQuery = "SELECT id,node_id FROM shape;";
-mDbCmd.CommandText = selectQuery;
-IDataReader reader = mDbCmd.ExecuteReader();
+DbCmd.CommandText = selectQuery;
+IDataReader reader = DbCmd.ExecuteReader();
 int id, feature_id;
 double lat, lon;
 List<int> highways = new List<int>();
@@ -4423,8 +4423,8 @@ reader.Close();
 
 string cleanFeatures = strFeatures.Remove(strFeatures.Length - 1);//Remove final comma.
 selectQuery = "SELECT id FROM mapFeature WHERE type='highway' AND id IN (" + cleanFeatures + ");";
-mDbCmd.CommandText = selectQuery;
-reader = mDbCmd.ExecuteReader();
+DbCmd.CommandText = selectQuery;
+reader = DbCmd.ExecuteReader();
 while (reader.Read())
 {
     id = Int32.Parse(reader["id"].ToString());
@@ -4436,8 +4436,8 @@ for (int i = 0; i < highways.Count; i++)
     //FIX FIX FIX: excessive DB access, we already got all this data above, or could have, should store it 
     //there and then loop back through it instead of asking again.
     selectQuery = "SELECT id,latitude,longitude FROM mapNode WHERE feature_id=" + highways[i] + ";";
-    mDbCmd.CommandText = selectQuery;
-    reader = mDbCmd.ExecuteReader();
+    DbCmd.CommandText = selectQuery;
+    reader = DbCmd.ExecuteReader();
     List<Vector3> markerVectors = new List<Vector3>();
     while (reader.Read())
     {
@@ -4538,7 +4538,7 @@ private void loadStaticShapes()
        }
        loops++;
    }
-   if (mDbCmd != null)
+   if (DbCmd != null)
    {
        long nodeId, fileId, posId, rotId, scaleId, shapeId;
        int result, total_query_len = 0;
@@ -4570,8 +4570,8 @@ private void loadStaticShapes()
 
        //selectQuery = "SELECT id,osm_id,name FROM osmNode WHERE id<10;";
        //selectQuery = "SELECT id,node_id FROM shape;";
-       mDbCmd.CommandText = selectQuery;
-       IDataReader reader = mDbCmd.ExecuteReader();
+       DbCmd.CommandText = selectQuery;
+       IDataReader reader = DbCmd.ExecuteReader();
        while (reader.Read())
        {
            int id = Int32.Parse(reader["nid"].ToString()); //reader.GetInt32(0);// reader.GetInt32(0);
@@ -4823,8 +4823,8 @@ public class GrassCreator : ScriptableWizard
        block->mLightMapSize = mD.mLightmapRes;
        block->mLongitude = startLong;
        block->mLatitude = startLat;
-       Vector3 blockPos = Vector3(((startLong-mD.mMapCenterLongitude)*mD.mMetersPerDegreeLongitude),
-                           (startLat-mD.mMapCenterLatitude)*mD.mMetersPerDegreeLatitude,0.0);//FIX! need maxHeight/minHeight
+       Vector3 blockPos = Vector3(((startLong-mD.MapCenterLongitude)*mD.MetersPerDegreeLongitude),
+                           (startLat-mD.MapCenterLatitude)*mD.MetersPerDegreeLatitude,0.0);//FIX! need maxHeight/minHeight
        block->setPosition(blockPos );
 
        mTerrains.increment();

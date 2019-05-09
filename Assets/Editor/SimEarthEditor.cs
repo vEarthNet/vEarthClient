@@ -82,19 +82,19 @@ public class SimEarthEditorMenu
 
 
         //Have to load up values in terrainPager, it does this at runtime. Better way??
-        theTP.mSquareSize = 10.0f;
-        theTP.mHeightmapRes = 257;//TEMP, 257, FiX FIX FIX, have to get back into FG to fix this though.
-        theTP.mTileWidth = (float)(theTP.mHeightmapRes - 1) * theTP.mSquareSize;
-        theTP.mMapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
-        theTP.mMapCenterLongitude = -123.0047f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ??
+        theTP.SquareSize = 10.0f;
+        theTP.HeightmapRes = 257;//TEMP, 257, FiX FIX FIX, have to get back into FG to fix this though.
+        theTP.TileWidth = (float)(theTP.HeightmapRes - 1) * theTP.SquareSize;
+        theTP.MapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
+        theTP.MapCenterLongitude = -123.0047f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ??
 
-        float rLat = theTP.mMapCenterLatitude * Mathf.Deg2Rad;
-        theTP.mMetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
-        theTP.mMetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
-        theTP.mDegreesPerMeterLongitude = 1.0f / theTP.mMetersPerDegreeLongitude;
-        theTP.mDegreesPerMeterLatitude = 1.0f / theTP.mMetersPerDegreeLatitude;
-        theTP.mTileWidthLongitude = theTP.mDegreesPerMeterLongitude * theTP.mTileWidth;
-        theTP.mTileWidthLatitude = theTP.mDegreesPerMeterLatitude * theTP.mTileWidth;
+        float rLat = theTP.MapCenterLatitude * Mathf.Deg2Rad;
+        theTP.MetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
+        theTP.MetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
+        theTP.DegreesPerMeterLongitude = 1.0f / theTP.MetersPerDegreeLongitude;
+        theTP.DegreesPerMeterLatitude = 1.0f / theTP.MetersPerDegreeLatitude;
+        theTP.TileWidthLongitude = theTP.DegreesPerMeterLongitude * theTP.TileWidth;
+        theTP.TileWidthLatitude = theTP.DegreesPerMeterLatitude * theTP.TileWidth;
 
 
         string mDbName = "w130n40.db";
@@ -112,6 +112,13 @@ public class SimEarthEditorMenu
         Coordinates terrCoord = new Coordinates();
         Coordinates nodeCoord = new Coordinates();
         Coordinates objCoord = new Coordinates();
+
+        if (theTP.MapNodePrefab == null)
+        {
+            Debug.Log("Map Node Prefab not found, exiting simEarthLoadShapes.");
+            return;
+        }
+
 
         GameObject[] objs = Selection.gameObjects;
         GameObject[] allObjs = Object.FindObjectsOfType<GameObject>();
@@ -147,8 +154,8 @@ public class SimEarthEditorMenu
 
 
                selectQuery = "SELECT id,latitude,longitude,name FROM mapNode WHERE type='MapNode' AND latitude >= " + terrCoord.latitude +
-                             " AND latitude < " + (terrCoord.latitude + theTP.mTileWidthLatitude) + " AND longitude >= " +
-                             terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + theTP.mTileWidthLongitude) + ";";
+                             " AND latitude < " + (terrCoord.latitude + theTP.TileWidthLatitude) + " AND longitude >= " +
+                             terrCoord.longitude + " AND longitude < " + (terrCoord.longitude + theTP.TileWidthLongitude) + ";";
                mDbCmd.CommandText = selectQuery;
                reader = mDbCmd.ExecuteReader();
                while (reader.Read())
@@ -279,20 +286,20 @@ public class SimEarthEditorMenu
             return;
 
         //Have to load up values in terrainPager, it does this at runtime. Better way??
-        theTP.mSquareSize = 10.0f;
-        theTP.mSkyboxRes = 800;
-        theTP.mHeightmapRes = 257;//TEMP, 257, FiX FIX FIX, have to get back into FG to fix this though.
-        theTP.mTileWidth = (float)(theTP.mHeightmapRes - 1) * theTP.mSquareSize;
-        theTP.mMapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
-        theTP.mMapCenterLongitude = -123.0047f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ??
+        theTP.SquareSize = 10.0f;
+        theTP.SkyboxRes = 800;
+        theTP.HeightmapRes = 257;//TEMP, 257, FiX FIX FIX, have to get back into FG to fix this though.
+        theTP.TileWidth = (float)(theTP.HeightmapRes - 1) * theTP.SquareSize;
+        theTP.MapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
+        theTP.MapCenterLongitude = -123.0047f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ??
         
-        float rLat = theTP.mMapCenterLatitude * Mathf.Deg2Rad;
-        theTP.mMetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
-        theTP.mMetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
-        theTP.mDegreesPerMeterLongitude = 1.0f / theTP.mMetersPerDegreeLongitude;
-        theTP.mDegreesPerMeterLatitude = 1.0f / theTP.mMetersPerDegreeLatitude;
-        theTP.mTileWidthLongitude = theTP.mDegreesPerMeterLongitude * theTP.mTileWidth;
-        theTP.mTileWidthLatitude = theTP.mDegreesPerMeterLatitude * theTP.mTileWidth;
+        float rLat = theTP.MapCenterLatitude * Mathf.Deg2Rad;
+        theTP.MetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
+        theTP.MetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
+        theTP.DegreesPerMeterLongitude = 1.0f / theTP.MetersPerDegreeLongitude;
+        theTP.DegreesPerMeterLatitude = 1.0f / theTP.MetersPerDegreeLatitude;
+        theTP.TileWidthLongitude = theTP.DegreesPerMeterLongitude * theTP.TileWidth;
+        theTP.TileWidthLatitude = theTP.DegreesPerMeterLatitude * theTP.TileWidth;
 
         string mDbName = "w130n40.db";
         string conn = "URI=file:" + Application.dataPath + "/" + mDbName;//Will this break on build as well? Move to Resources?
@@ -374,8 +381,8 @@ public class SimEarthEditorMenu
                     //Coordinates objCoords = theTP.ConvertXYZToLatLong(terrMapPos + relPos);
 
                     Coordinates relCoords = new Coordinates();//Can we do this on a difference rather than actual coordinates? Hm.
-                    relCoords.longitude = relPos.x * theTP.mDegreesPerMeterLongitude;
-                    relCoords.latitude = relPos.z * theTP.mDegreesPerMeterLatitude;
+                    relCoords.longitude = relPos.x * theTP.DegreesPerMeterLongitude;
+                    relCoords.latitude = relPos.z * theTP.DegreesPerMeterLatitude;
                     Coordinates objCoords = new Coordinates();
                     objCoords.longitude = terrCoord.longitude + relCoords.longitude;
                     objCoords.latitude = terrCoord.latitude + relCoords.latitude;
