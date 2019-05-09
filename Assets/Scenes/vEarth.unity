@@ -499,7 +499,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseTerrainObject: {fileID: 1346167372}
   PlayerObject: {fileID: 0}
-  CameraObject: {fileID: 0}
+  CameraObject: {fileID: 534669902}
   MapNodePrefab: {fileID: 0}
   DatabasePath: Resources/w130n40.db
   UseDataSource: 0

@@ -56,7 +56,11 @@ sysinfo.txt
 crashlytics-build.properties
 
 
+# vEarth Specific
 *~
 *.db
+/Assets/Resources/TerrainBin/
+
+
 
 

@@ -278,8 +278,8 @@ public class TerrainPager : MonoBehaviour
     
     ///////////////////////////////////////////////////////////
     
-    float mTileStartLongitude;//These refer to the bottom left corner of the tile
-    float mTileStartLatitude;  //the client is currently standing on or over.
+    float TileStartLongitude;//These refer to the bottom left corner of the tile
+    float TileStartLatitude;  //the client is currently standing on or over.
     
     int mCurrentTick;
     int mTickInterval;
@@ -379,11 +379,7 @@ public class TerrainPager : MonoBehaviour
             MapCenterLatitude = 44.0f;// 21.936f;//22.0f;////HERE: this is the geographic center of the whole map.
         if (MapCenterLongitude == 0)
         MapCenterLongitude = -123.0046f;// 123.0047f;//  -159.380f;//-159.5f;//GET THIS FROM THE GUI! //.005?? Something is broken, by just five thousandths. ?? FIX FIX FIX
-
-        //mD.MetersPerDegreeLongitude = 80389.38609f;//2560.0f / TileWidthLongitude ;//FIX: get from server, based on centerLat/Long
-        //mD.DegreesPerMeterLongitude = 0.000012439f;//TileWidthLongitude / 2560.0f;
-        //mD.MetersPerDegreeLatitude = 111169.0164f;//2560.0f / TileWidthLatitude ;
-        //mD.DegreesPerMeterLatitude = 0.000008995f;//TileWidthLatitude / 2560.0f;
+        
         float rLat = MapCenterLatitude * Mathf.Deg2Rad;
         MetersPerDegreeLatitude = 111132.92f - 559.82f * Mathf.Cos(2 * rLat) + 1.175f * Mathf.Cos(4 * rLat);
         MetersPerDegreeLongitude = 111412.84f * Mathf.Cos(rLat) - 93.5f * Mathf.Cos(3 * rLat);
@@ -393,7 +389,7 @@ public class TerrainPager : MonoBehaviour
         TileWidthLatitude = DegreesPerMeterLatitude * TileWidth;
         Debug.Log("MetersPerDegree Longitude: " + MetersPerDegreeLongitude + " Latitude " + MetersPerDegreeLatitude + " degreesPerMeterLong " + DegreesPerMeterLongitude);
         mClientPosLongitude = -9999.0f;//Doing this as a flag to tell us we haven't done init yet - since 0.0 degrees longitude is possible. 
-        mClientPosLatitude = 0.0f;//Is there a good reason these are in this struct though?
+        mClientPosLatitude = 0.0f;
         mClientPosAltitude = 0.0f;
 
 
@@ -405,7 +401,7 @@ public class TerrainPager : MonoBehaviour
 
         findClientTile();
 
-        string tileName = getTileName(mTileStartLongitude, mTileStartLatitude);
+        string tileName = getTileName(TileStartLongitude, TileStartLatitude);
         string heightfilename = TerrainPath + "hght." + tileName + ".bin";// sprintf(heightfilename, "%shght.%s.bin", mD.TerrainPath.c_str(), tileName);
         string texturefilename = TerrainPath + "text." + tileName + ".bin";// sprintf(texturefilename, "%stext.%s.bin", mD.TerrainPath.c_str(), tileName);
         TerrainData terrData;
@@ -439,7 +435,7 @@ public class TerrainPager : MonoBehaviour
                 int index = (((int)(GridSize / 2) * GridSize) + ((int)(GridSize / 2)));
                 mTerrainGrid[index] = BaseTerrainObject;//(the center square)
                 mTerrains.Add(BaseTerrainObject);
-                mTerrainCoords.Add(new Coordinates((double)mTileStartLongitude, (double)(mTileStartLatitude)));
+                mTerrainCoords.Add(new Coordinates((double)TileStartLongitude, (double)(TileStartLatitude)));
                 loadTerrainData(mTerrains.Count-1, heightfilename, texturefilename, tileName);
                 //Debug.Log("Trying to add forest and roads for base terrain, data name: " + BaseTerrain.terrainData.name);
                 alphaRes = terrData.alphamapResolution;
@@ -465,8 +461,8 @@ public class TerrainPager : MonoBehaviour
             DataSource.Start();
         }
         
-        float endLat = mTileStartLatitude + TileWidthLatitude;
-        float endLong = mTileStartLongitude + TileWidthLongitude;
+        float endLat = TileStartLatitude + TileWidthLatitude;
+        float endLong = TileStartLongitude + TileWidthLongitude;
         terrData = mTerrain.GetComponent<Terrain>().terrainData;
         alphaRes = terrData.alphamapResolution;
         tSplatmap = terrData.GetAlphamaps(0, 0, alphaRes, alphaRes);
@@ -519,8 +515,8 @@ public class TerrainPager : MonoBehaviour
 
         if (importRoads) ImportOpenStreetMap("Assets/OSM/cottage_grove.osm");
 
-        if (convertRoads) ConvertRoads(new Vector2(mTileStartLongitude, mTileStartLatitude),new Vector2(endLong, endLat),0);
-        if (makeRoads) MakeRoads(new Vector2(mTileStartLongitude, mTileStartLatitude), new Vector2(endLong, endLat), 0);
+        if (convertRoads) ConvertRoads(new Vector2(TileStartLongitude, TileStartLatitude),new Vector2(endLong, endLat),0);
+        if (makeRoads) MakeRoads(new Vector2(TileStartLongitude, TileStartLatitude), new Vector2(endLong, endLat), 0);
         */
         MakeShapes(BaseTerrain);
         if (terrData.treeInstanceCount == 0)
@@ -608,8 +604,8 @@ public class TerrainPager : MonoBehaviour
                 //Con::printf("terrainPager first client info: long/lat %f %f, pos %f %f",
                 //            mD.mClientPosLongitude, mD.mClientPosLatitude, mClientPos.x, mClientPos.y);
 
-                mLastTileStartLong = mTileStartLongitude;
-                mLastTileStartLat = mTileStartLatitude;
+                mLastTileStartLong = TileStartLongitude;
+                mLastTileStartLat = TileStartLatitude;
 
                 if (!UseDataSource) //If not using data source, just page around the finished terrains.
                 {
@@ -678,14 +674,14 @@ public class TerrainPager : MonoBehaviour
                 break;
 
             case PagerLoadStage.PagerRunning:
-                if (mLastTileStartLong != mTileStartLongitude) newTile = true;
-                if (mLastTileStartLat != mTileStartLatitude) newTile = true;
+                if (mLastTileStartLong != TileStartLongitude) newTile = true;
+                if (mLastTileStartLat != TileStartLatitude) newTile = true;
                 if (newTile)
                 {
                     checkTileGrid();
 
-                    mLastTileStartLong = mTileStartLongitude;
-                    mLastTileStartLat = mTileStartLatitude;
+                    mLastTileStartLong = TileStartLongitude;
+                    mLastTileStartLat = TileStartLatitude;
 
                     mTerrain = mTerrainGrid[(mGridMidpoint * GridSize) + mGridMidpoint];
 
@@ -703,7 +699,7 @@ public class TerrainPager : MonoBehaviour
                     ((int)mLastSkyboxTick < ((int)mCurrentTick - (int)mSkyboxTickInterval)) &&
                     (SentSkyboxRequest == false))
                 {
-                    DataSource.addSkyboxRequest(mTileStartLongitude, mTileStartLatitude, mClientPosLongitude, mClientPosLatitude, mClientPosAltitude);
+                    DataSource.addSkyboxRequest(TileStartLongitude, TileStartLatitude, mClientPosLongitude, mClientPosLatitude, mClientPosAltitude);
                     //mLoadState = 4;
                     SentSkyboxRequest = true;
                     DataSource.mSkyboxDone = false;
@@ -1753,16 +1749,21 @@ mSQL->CloseDatabase();
     {
         FindClientPos();
 
+        if (mClientPosLongitude == -9999.0f)
+        {
+            Debug.Log("Terrain Pager has no client pos, check that CameraObject or PlayerObject is valid.");
+            return;
+        }
         Vector2 clientPos = new Vector2(mClientPosLongitude, mClientPosLatitude);
         //FIX: The following is off by one half tile width because of my (perhaps questionable) decision to put 
         //map center in the center of a tile rather than at the lower left corner of that tile. Subject to review.
         Vector2 centerTileStart = new Vector2(MapCenterLongitude - (TileWidthLongitude / 2.0f),
                                     MapCenterLatitude - (TileWidthLatitude / 2.0f));
 
-        //mLastTileStartLong = mTileStartLongitude;
-        //mLastTileStartLat = mTileStartLatitude;
-        mTileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / TileWidthLongitude) * TileWidthLongitude) + centerTileStart.x;
-        mTileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / TileWidthLatitude) * TileWidthLatitude) + centerTileStart.y;
+        //mLastTileStartLong = TileStartLongitude;
+        //mLastTileStartLat = TileStartLatitude;
+        TileStartLongitude = ((float)Math.Floor((clientPos.x - centerTileStart.x) / TileWidthLongitude) * TileWidthLongitude) + centerTileStart.x;
+        TileStartLatitude = ((float)Math.Floor((clientPos.y - centerTileStart.y) / TileWidthLatitude) * TileWidthLatitude) + centerTileStart.y;
         //Debug.Log("Tile Width Longitude: " + (mD.TileWidthLongitude / 2.0f) + "  mapCenter " + mD.MapCenterLongitude + " , " + mD.MapCenterLatitude  + "  centerTileStart " + centerTileStart.x + " , " + centerTileStart.y);
     }
 
@@ -1791,10 +1792,10 @@ mSQL->CloseDatabase();
         //List<loadTerrainData> loadTerrains = new List<loadTerrainData>();//This is a list of the coords and distances for each terrain 
                                                 //that we need to request from the worldServer.
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * TileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * TileWidthLatitude);
+        float startLong = TileStartLongitude - (mGridMidpoint * TileWidthLongitude);
+        float startLat = TileStartLatitude - (mGridMidpoint * TileWidthLatitude);
         Debug.Log("loading tile grid, client pos " + mClientPosLongitude + " " + mClientPosLatitude + ", client tile start " +
-              mTileStartLongitude + " " + mTileStartLatitude + " local grid start " + startLong + " " + startLat);
+              TileStartLongitude + " " + TileStartLatitude + " local grid start " + startLong + " " + startLat);
 
        
         for (int y = 0; y < GridSize; y++)
@@ -1966,13 +1967,13 @@ mSQL->CloseDatabase();
     private void checkTileGrid()
     {
         if (TileWidthLongitude == 0)
-            return;//FIX: something is breaking horribly before here, getting NaN for mTileStartLongitude, etc.
+            return;//FIX: something is breaking horribly before here, getting NaN for TileStartLongitude, etc.
         //bool verbose = false;
         string tileName, heightfilename, texturefilename;
 
-        float startLong = mTileStartLongitude - (mGridMidpoint * TileWidthLongitude);
-        float startLat = mTileStartLatitude - (mGridMidpoint * TileWidthLatitude);
-        //Debug.Log("checkTileGrid -  startLong " + startLong + " startLat " + startLat + " tileStartLong " + mTileStartLongitude +
+        float startLong = TileStartLongitude - (mGridMidpoint * TileWidthLongitude);
+        float startLat = TileStartLatitude - (mGridMidpoint * TileWidthLatitude);
+        //Debug.Log("checkTileGrid -  startLong " + startLong + " startLat " + startLat + " tileStartLong " + TileStartLongitude +
         //        " tileWidthLong " + mD.TileWidthLongitude + " midpoint " + mGridMidpoint);
         for (int y = 0; y < GridSize; y++)
         {
@@ -2161,9 +2162,9 @@ mSQL->CloseDatabase();
 
             int index = mTerrains.FindIndex(x => x.Equals(terr));
             //mRoadedTerrains.Add(index);//Hm, do we need this anymore, if we always make roads on loading each tile?
-            //float endLat = mTileStartLatitude + mD.TileWidthLatitude;
-            //float endLong = mTileStartLongitude + mD.TileWidthLongitude;
-            ////MakeRoads(new Vector2(mTileStartLongitude, mTileStartLatitude), new Vector2(endLong, endLat));
+            //float endLat = TileStartLatitude + mD.TileWidthLatitude;
+            //float endLong = TileStartLongitude + mD.TileWidthLongitude;
+            ////MakeRoads(new Vector2(TileStartLongitude, TileStartLatitude), new Vector2(endLong, endLat));
 
             float endLat = startLat + TileWidthLatitude;
             float endLong = startLong + TileWidthLongitude;
@@ -4393,8 +4394,8 @@ mSQL->CloseDatabase();
 //Hm, need to come up with the best C# way to replicate the large block ostringstream syntax below.
 //Looks like "+" is going to be my best bet, from initial research.
 selectQuery = "SELECT id,feature_id " + //,latitude,longitude
-                "FROM mapNode WHERE latitude>" + mTileStartLatitude + " AND latitude<" + endLat +
-                " AND longitude>" + mTileStartLongitude + " AND longitude<" + endLong + ";";
+                "FROM mapNode WHERE latitude>" + TileStartLatitude + " AND latitude<" + endLat +
+                " AND longitude>" + TileStartLongitude + " AND longitude<" + endLong + ";";
 
 
 Debug.Log(selectQuery);
@@ -4475,7 +4476,7 @@ private void loadStaticShapes()
    List<string> activeCells = new List<string>();
 
    //unsigned long startTime =  clock(); //
-   cellName = GetCellName(mTileStartLongitude, mTileStartLatitude);
+   cellName = GetCellName(TileStartLongitude, TileStartLatitude);
    Debug.Log("loadStaticShapes!!! cellname " + cellName + " baseCellCoords "  + baseCellCoords.ToString() + " clientPos " + mClientPos.ToString());
    cellName = "123d0069W_43d9261N";
    activeCells.Add(cellName);
