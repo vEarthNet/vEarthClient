@@ -148,6 +148,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
+    Android: net.vEarth.android
     Standalone: net.vEarth.client
     iOS: net.vEarth.client
   buildNumber: {}
