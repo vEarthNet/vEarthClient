@@ -2192,14 +2192,17 @@ mSQL->CloseDatabase();
        // int textureRes = 256;
         int numPrototypes = terr.terrainData.treePrototypes.Length;
 
+        //Material index associated with this tree
         int indexFir = 0;
         int indexOak = 3;
         int indexAspen = 1;
 
+        //Start position in the terrain trees list
         int firStart = 0;
         int oakStart = 3;
         int aspenStart = 4;
 
+        //Percent chance of placing a tree at each grid point, i.e. forest density.
         float firChance = 0.55f;
         float oakChance = 0.25f;
         float aspenChance = 0.3f;
