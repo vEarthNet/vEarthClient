@@ -5,12 +5,12 @@ using System.Data;
 using Mono.Data.Sqlite;
 using System.Linq;
 
-public class SimEarthEditorMenu
+public class vEarthEditorMenu
 {
 
 
-    [MenuItem("SimEarth/RunTerrainPager", false, 1)]
-    private static void simEarthRunTerrainPager()
+    [MenuItem("vEarth/RunTerrainPager", false, 1)]
+    private static void vEarthRunTerrainPager()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -19,8 +19,8 @@ public class SimEarthEditorMenu
         theTP.RunTerrainPager();
     }
 
-    [MenuItem("SimEarth/StopTerrainPager",false,2)]
-    private static void simEarthStopTerrainPager()
+    [MenuItem("vEarth/StopTerrainPager",false,2)]
+    private static void vEarthStopTerrainPager()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -29,8 +29,8 @@ public class SimEarthEditorMenu
         theTP.StopTerrainPager();
     }
     /*
-    [MenuItem("SimEarth/MakeRoad", false, 3)]
-    private static void simEarthMakeRoad()
+    [MenuItem("vEarth/MakeRoad", false, 3)]
+    private static void vEarthMakeRoad()
     {
         TerrainPager theTP;
         theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
@@ -40,8 +40,8 @@ public class SimEarthEditorMenu
         theTP.MakeARoad();
     }*/
 
-    [MenuItem("SimEarth/ImportOpenStreetMap", false, 21)]
-    private static void simEarthImportOpenStreetMap()
+    [MenuItem("vEarth/ImportOpenStreetMap", false, 21)]
+    private static void vEarthImportOpenStreetMap()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -51,8 +51,8 @@ public class SimEarthEditorMenu
         theTP.ImportOpenStreetMap("Assets/OSM/creswell_greater.osm");
     }
 
-    [MenuItem("SimEarth/SaveRoads", false, 22)]
-    private static void simEarthSaveRoads()
+    [MenuItem("vEarth/SaveRoads", false, 22)]
+    private static void vEarthSaveRoads()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -61,8 +61,8 @@ public class SimEarthEditorMenu
         //theTP.SaveRoads();//TEMP, ROADS
     }
 
-    [MenuItem("SimEarth/DeleteRoads", false, 23)]
-    private static void simEarthDeleteRoads()
+    [MenuItem("vEarth/DeleteRoads", false, 23)]
+    private static void vEarthDeleteRoads()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -73,8 +73,8 @@ public class SimEarthEditorMenu
 
 
     //FIX: move all this into terrainPager, don't do it here.
-    [MenuItem("SimEarth/LoadShapes", false, 331)]
-    private static void simEarthLoadShapes()
+    [MenuItem("vEarth/LoadShapes", false, 331)]
+    private static void vEarthLoadShapes()
     {
         TerrainPager theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
         if (theTP == null)
@@ -115,7 +115,7 @@ public class SimEarthEditorMenu
 
         if (theTP.MapNodePrefab == null)
         {
-            Debug.Log("Map Node Prefab not found, exiting simEarthLoadShapes.");
+            Debug.Log("Map Node Prefab not found, exiting vEarthLoadShapes.");
             return;
         }
 
@@ -261,8 +261,8 @@ public class SimEarthEditorMenu
     }
 
 
-    [MenuItem("SimEarth/UnloadShapes", false, 332)]
-    private static void simEarthUnloadShapes()
+    [MenuItem("vEarth/UnloadShapes", false, 332)]
+    private static void vEarthUnloadShapes()
     {
 
         GameObject[] allObjs = Object.FindObjectsOfType<GameObject>();
@@ -277,8 +277,8 @@ public class SimEarthEditorMenu
 
 
     //FIX: move all this into terrainPager, don't do it here.
-    [MenuItem("SimEarth/SaveShapes", false, 333)]
-    private static void simEarthSaveShapes()
+    [MenuItem("vEarth/SaveShapes", false, 333)]
+    private static void vEarthSaveShapes()
     {
         TerrainPager theTP;
         theTP = GameObject.Find("TerrainPager").GetComponent<TerrainPager>();
