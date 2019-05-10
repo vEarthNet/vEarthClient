@@ -2204,7 +2204,7 @@ mSQL->CloseDatabase();
 
         //Percent chance of placing a tree at each grid point, i.e. forest density.
         float firChance = 0.55f;
-        float oakChance = 0.25f;
+        float oakChance = 0.85f;
         float aspenChance = 0.3f;
 
         //for (int i = 0; i < textureRes/8; i++)
