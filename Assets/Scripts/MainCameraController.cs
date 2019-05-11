@@ -6,7 +6,7 @@ public class MainCameraController : MonoBehaviour
 {
 
     public float MouseSensitivity = 6;
-    public float MoveSpeed = 100.0f;
+    public float MoveSpeed = 5.0f;
 
     public KeyCode MoveCamForward = KeyCode.W;
     public KeyCode MoveCamBackward = KeyCode.S;
@@ -23,12 +23,10 @@ public class MainCameraController : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
-
-        mouseLook();
+    {        
+        //mouseLook();
 
         checkMove();
-
     }
 
     public void mouseLook()
@@ -50,22 +48,22 @@ public class MainCameraController : MonoBehaviour
 
     public void checkMove()
     {
+        //Debug.Log("Checking move!!!!!!!!!! isTouching " + GvrControllerInput.IsTouching.ToString() + " click button " + GvrControllerInput.ClickButtonDown.ToString() 
+        //   + " touchpos " + GvrControllerInput.TouchPos.ToString());
 
-        Vector3 camPos;
+        Vector3 camMove,camPos;
         
-
-        if (Input.GetKey(MoveCamForward))
+        //if ( Input.GetKey(MoveCamForward) || GvrControllerInput.IsTouching || GvrControllerInput.ClickButtonDown)
+        if (GvrControllerInput.IsTouching)
         {
-            Camera.main.transform.Translate(Vector3.forward * MoveSpeed);
-            Vector3 newPos = Camera.main.transform.position;      
-            Camera.main.transform.position = newPos;
-            //Debug.Log("Camera Pos: " + Camera.main.transform.position.ToString());
-        }
+            GameObject player = Camera.main.transform.parent.gameObject;
+            camMove = Camera.main.transform.forward * MoveSpeed;
+            camPos = player.transform.position;
+            player.transform.position = camPos + camMove;
+        }/*
         else if (Input.GetKey(MoveCamBackward))
         {
-            Camera.main.transform.Translate(Vector3.forward * -MoveSpeed);
-            Vector3 newPos = Camera.main.transform.position;       
-            Camera.main.transform.position = newPos;
+
         }
         else if (Input.GetKey(MoveCamLeft))
         {
@@ -82,7 +80,7 @@ public class MainCameraController : MonoBehaviour
         else if (Input.GetKey(MoveCamDown))
         {
             Camera.main.transform.Translate(Vector3.up * -MoveSpeed);
-        }
+        }*/
     }
 
 }
