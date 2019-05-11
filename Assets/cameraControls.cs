@@ -50,21 +50,21 @@ public class cameraControls : MonoBehaviour
     public void checkMove()
     {
 
-        Vector3 camPos;
+        //Vector3 camPos;
 
 
         if (Input.GetKey(MoveCamForward))
         {
             Camera.main.transform.Translate(Vector3.forward * MoveSpeed);
-            Vector3 newPos = Camera.main.transform.position;
-            Camera.main.transform.position = newPos;
-            //Debug.Log("Camera Pos: " + Camera.main.transform.position.ToString());
+            //Vector3 newPos = Camera.main.transform.position;
+            //Camera.main.transform.position = newPos;
+            //Debug.Log("Camera Pos: " + Camera.main.transform.position.ToString() + " moveSpeed " + MoveSpeed );
         }
         else if (Input.GetKey(MoveCamBackward))
         {
             Camera.main.transform.Translate(Vector3.forward * -MoveSpeed);
-            Vector3 newPos = Camera.main.transform.position;
-            Camera.main.transform.position = newPos;
+            //Vector3 newPos = Camera.main.transform.position;
+            //Camera.main.transform.position = newPos;
         }
         else if (Input.GetKey(MoveCamLeft))
         {
