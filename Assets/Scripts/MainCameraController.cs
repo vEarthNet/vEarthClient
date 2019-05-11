@@ -8,6 +8,7 @@ public class MainCameraController : MonoBehaviour
 
     public float MouseSensitivity = 6;
     public float MoveSpeed = 5.0f;
+    public float MoveDeadZone = 0.15f;
     public float RotateSpeed = 5.0f;
     public float RotateDeadZone = 0.3f;
 
@@ -77,11 +78,14 @@ public class MainCameraController : MonoBehaviour
             float forwardVel = 1.0f - (touchPos.y * 2.0f);
             float turnVel = -1.0f + (touchPos.x * 2.0f);
             
-
             GameObject player = Camera.main.transform.parent.gameObject;
-            camMove = Camera.main.transform.forward * MoveSpeed * forwardVel;
-            camPos = player.transform.position;
-            player.transform.position = camPos + camMove;
+
+            if (Mathf.Abs(forwardVel) > MoveDeadZone)
+            {
+                camMove = Camera.main.transform.forward * MoveSpeed * forwardVel;
+                camPos = player.transform.position;
+                player.transform.position = camPos + camMove;
+            }
 
             if (Mathf.Abs(turnVel) > RotateDeadZone)
                 player.transform.Rotate(Vector3.up, turnVel * RotateSpeed );

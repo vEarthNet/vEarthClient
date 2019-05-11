@@ -398,7 +398,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MouseSensitivity: 6
   MoveSpeed: 6
-  RotateSpeed: 6
+  RotateSpeed: 2
+  RotateDeadZone: 0.3
   MoveCamForward: 119
   MoveCamBackward: 115
   MoveCamLeft: 97
