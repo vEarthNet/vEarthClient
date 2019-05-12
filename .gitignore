@@ -56,9 +56,18 @@ sysinfo.txt
 crashlytics-build.properties
 
 
+<<<<<<< HEAD
 # vEarth Specific
 *~
 *.db
+=======
+
+################## vEarth ######################
+
+*~        #emacs backup files
+*.db      #sqlite databases
+
+>>>>>>> 4f999abf798e3c48db55c5805164643d8197cc9d
 /Assets/Resources/TerrainBin/
 /Assets/Resources/Terrain/
 
