@@ -60,7 +60,7 @@ crashlytics-build.properties
 *~
 *.db
 /Assets/Resources/TerrainBin/
-
+/Assets/Resources/Terrain/
 
 
 
