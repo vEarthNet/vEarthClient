@@ -364,9 +364,9 @@ public class TerrainPager : MonoBehaviour
         //HERE: this should all be done elsewhere - either exposed to the editor, or loaded in from the DB or from a file.
         //SkyboxPath = Application.dataPath + "/Resources/Skybox/";//Currently the same
         if (TerrainPath.Length == 0)
-            TerrainPath = Application.dataPath + "/Resources/TerrainBin/";//but could be different. 
+            TerrainPath = Application.persistentDataPath + "/Resources/TerrainBin/";//but could be different. 
         else
-            TerrainPath = Application.dataPath + TerrainPath;
+            TerrainPath = Application.persistentDataPath + TerrainPath;
         //ResourcePath = Application.dataPath + "/Resources/Terrain/";
 
         SquareSize = 10.0f;
@@ -723,7 +723,19 @@ public class TerrainPager : MonoBehaviour
     
     void OpenDatabase()
     {        
-        string conn = "URI=file:" + Application.dataPath + "/" + DatabasePath;//Will this break on build as well? Move to Resources?
+        string conn = "URI=file:" + Application.persistentDataPath + "/" + DatabasePath;//Will this break on build as well? Move to Resources?
+        Debug.Log(" database path: " + Application.persistentDataPath + "/" + DatabasePath);
+
+        /////////////// TEMP, TESTING for Android  ----- Yup, works, we do have write permission. ///////////////////
+        //string destination = Application.persistentDataPath + "/test.txt";
+        //FileStream file;
+        //file = File.OpenWrite(destination);
+        //byte[] b = new byte[12];
+        //for (int i=0;i<10;i++) b[i] = 3;
+        //file.Write(b,0,12);
+        //file.Close();
+        /////////////// END TEMP TESTING //////////////////
+
         DbConn = (IDbConnection)new SqliteConnection(conn);
         DbConn.Open(); //Open connection to the database.
         DbCmd = DbConn.CreateCommand();
@@ -739,7 +751,7 @@ public class TerrainPager : MonoBehaviour
             string path = reader.GetString(1);
             UnityEngine.Object obj = Resources.Load(path);
             mPrefabs.Add(id, obj);
-            //Debug.Log("id= " + id + "  path =" + path);
+            Debug.Log("id= " + id + "  path =" + path);
         }
         reader.Close();
 

@@ -398,6 +398,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MouseSensitivity: 6
   MoveSpeed: 6
+  MoveDeadZone: 0.15
   RotateSpeed: 2
   RotateDeadZone: 0.3
   MoveCamForward: 119
@@ -712,7 +713,7 @@ MonoBehaviour:
   PlayerObject: {fileID: 0}
   CameraObject: {fileID: 534669902}
   MapNodePrefab: {fileID: 0}
-  DatabasePath: Resources/w130n40.db
+  DatabasePath: w130n40.db
   UseDataSource: 0
   TileLoadRadius: 3000
   TileDropRadius: 0
