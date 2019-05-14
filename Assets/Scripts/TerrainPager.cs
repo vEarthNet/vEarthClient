@@ -154,6 +154,8 @@ public struct erRoadMarker
 // maintain a WorldDataSource connection to an external process (FlightGear) for realtime updates.
 public class TerrainPager : MonoBehaviour
 {
+    TerrainDb TerrainDB;
+
     public enum PagerLoadStage
     {
         NothingLoaded,
@@ -871,9 +873,6 @@ public class TerrainPager : MonoBehaviour
         
 
 
-
-
-
             //Playing fast and loose here but I KNOW I gave everybody a latitude and longitude...
             objCoord.latitude = reader.GetDouble(reader.GetOrdinal("latitude"));
             objCoord.longitude = reader.GetDouble(reader.GetOrdinal("longitude"));
@@ -886,7 +885,7 @@ public class TerrainPager : MonoBehaviour
             myPos.y = terr.SampleHeight(myPos);
             myNode.transform.position = myPos;
             //.y = terrData.GetHeight();
-            Debug.Log("!!!!!!!!!!!!!!! " + tileName + " INStANTIATED a mapnode!!!!! " + objName + " pos " + myNode.transform.position + "!!!!!!!!!!!!!");
+            Debug.Log("!!!!!!!!!!!!!!! " + tileName + " INSTANTIATED a mapnode!!!!! " + objName + " pos " + myNode.transform.position + "!!!!!!!!!!!!!");
             myNode.name = objName;
 
 
