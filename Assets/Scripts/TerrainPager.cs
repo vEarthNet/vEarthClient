@@ -727,6 +727,19 @@ public class TerrainPager : MonoBehaviour
         Debug.Log(" database path: " + Application.persistentDataPath + "/" + DatabasePath);
 
         /////////////// TEMP, TESTING for Android  ----- Yup, works, we do have write permission. ///////////////////
+        //TextAsset sqlFile = Resources.Load("vEarth.sql.txt") as TextAsset;
+        //if (sqlFile.bytes.Length > 0)
+        //    Debug.Log("TXT FILE: " + sqlFile.bytes);
+        //else Debug.Log("Can't find vEarth.sql.txt.");
+
+
+        //Text asset: do this to load a text file.
+        //TextAsset sqlFile = Resources.Load("vEarth") as TextAsset;
+        //if (sqlFile.text.Length > 0)
+        //    Debug.Log("SQL FILE: " + sqlFile.text);
+        //else Debug.Log("Can't find vEarth.sql.");
+
+        //Text file output: do this to write a text file.
         //string destination = Application.persistentDataPath + "/test.txt";
         //FileStream file;
         //file = File.OpenWrite(destination);
@@ -734,6 +747,8 @@ public class TerrainPager : MonoBehaviour
         //for (int i=0;i<10;i++) b[i] = 3;
         //file.Write(b,0,12);
         //file.Close();
+
+
         /////////////// END TEMP TESTING //////////////////
 
         DbConn = (IDbConnection)new SqliteConnection(conn);
@@ -754,7 +769,6 @@ public class TerrainPager : MonoBehaviour
             Debug.Log("id= " + id + "  path =" + path);
         }
         reader.Close();
-
     }
     
     private void MakeShapes(Terrain terr)
