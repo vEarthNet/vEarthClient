@@ -73,8 +73,7 @@ public class RPGCharacterController : MonoBehaviour //MonoBehaviorPun, IPunObser
     {
         animator = GetComponent<Animator>();
         //agent = GetComponent<NavMeshAgent>();        
-
-        animator.SetInteger("anim", IdleAnim);
+        
         isAttacking = false;
         mousePos = new Vector2(0, 0);
         health = 1.0f;
@@ -116,7 +115,7 @@ public class RPGCharacterController : MonoBehaviour //MonoBehaviorPun, IPunObser
             return;
 
         int action;
-        animator.SetBool("moving", false);
+        animator.SetBool("Moving", false);
         animator.SetFloat("Velocity X", 0.0f);
         animator.SetFloat("Velocity Z", 0.0f);
 
@@ -136,7 +135,7 @@ public class RPGCharacterController : MonoBehaviour //MonoBehaviorPun, IPunObser
         }
         if (Input.GetKey(KeyCode.W))
         {
-            animator.SetBool("moving", true);
+            animator.SetBool("Moving", true);
             if (Input.GetKey(KeyCode.LeftShift))
                 animator.SetFloat("Velocity Z", 4.0f);
             else
@@ -144,18 +143,18 @@ public class RPGCharacterController : MonoBehaviour //MonoBehaviorPun, IPunObser
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            animator.SetBool("moving", true);
+            animator.SetBool("Moving", true);
             animator.SetFloat("Velocity Z", -4.0f);
         }
 
         if (Input.GetKey(KeyCode.A))
         {
-            animator.SetBool("moving", true);
+            animator.SetBool("Moving", true);
             animator.SetFloat("Velocity X", -4.0f);
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            animator.SetBool("moving", true);
+            animator.SetBool("Moving", true);
             animator.SetFloat("Velocity X", 4.0f);
             //transform.position += transform.forward * -2.0f;
         }
@@ -171,7 +170,7 @@ public class RPGCharacterController : MonoBehaviour //MonoBehaviorPun, IPunObser
         }
         else if (Input.GetMouseButtonUp(0))
         {
-            animator.SetBool("moving", false);
+            animator.SetBool("Moving", false);
             animator.SetInteger("Jumping", 0);
             animator.ResetTrigger("JumpTrigger");//maybe?? Why are we going to jump tree??
             animator.SetInteger("Weapon", 1);//FIX: do this when you pick up a weapon, or at start.
