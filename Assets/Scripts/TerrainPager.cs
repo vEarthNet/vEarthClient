@@ -154,6 +154,8 @@ public struct erRoadMarker
 // maintain a WorldDataSource connection to an external process (FlightGear) for realtime updates.
 public class TerrainPager : MonoBehaviour
 {
+    //TerrainDb TerrainDB;
+
     public enum PagerLoadStage
     {
         NothingLoaded,
@@ -338,7 +340,7 @@ public class TerrainPager : MonoBehaviour
         
         if (DatabasePath.Length > 0)
         {
-            Debug.Log("opening database! " + DatabasePath);
+            Debug.Log("opening database!   " + Application.dataPath + "/Resources/" + DatabasePath);
             OpenDatabase();
         }
 
@@ -751,13 +753,15 @@ public class TerrainPager : MonoBehaviour
 
         /////////////// END TEMP TESTING //////////////////
 
+        //string conn = "URI=file:" + Application.dataPath + "/Resources/" + DatabasePath;//Will this break on build as well? Move to Resources?
+
         DbConn = (IDbConnection)new SqliteConnection(conn);
         DbConn.Open(); //Open connection to the database.
         DbCmd = DbConn.CreateCommand();
 
         //Load shapeFile prefabs
         //WARNING: FIX FIX FIX - this is loading the entire mapShapeFile, with no regard for what we are actually going to be using in this area
-        string sqlQuery = "SELECT id, path FROM mapShapeFile;";//This could be a big waste of memory in the future.
+        string sqlQuery = "SELECT id, material FROM erRoadType;";//This could be a big waste of memory in the future.
         DbCmd.CommandText = sqlQuery;
         IDataReader reader = DbCmd.ExecuteReader();
         while (reader.Read())
@@ -897,9 +901,6 @@ public class TerrainPager : MonoBehaviour
         
 
 
-
-
-
             //Playing fast and loose here but I KNOW I gave everybody a latitude and longitude...
             objCoord.latitude = reader.GetDouble(reader.GetOrdinal("latitude"));
             objCoord.longitude = reader.GetDouble(reader.GetOrdinal("longitude"));
@@ -912,7 +913,7 @@ public class TerrainPager : MonoBehaviour
             myPos.y = terr.SampleHeight(myPos);
             myNode.transform.position = myPos;
             //.y = terrData.GetHeight();
-            Debug.Log("!!!!!!!!!!!!!!! " + tileName + " INStANTIATED a mapnode!!!!! " + objName + " pos " + myNode.transform.position + "!!!!!!!!!!!!!");
+            Debug.Log("!!!!!!!!!!!!!!! " + tileName + " INSTANTIATED a mapnode!!!!! " + objName + " pos " + myNode.transform.position + "!!!!!!!!!!!!!");
             myNode.name = objName;
 
 

@@ -58,8 +58,8 @@ crashlytics-build.properties
 
 ################## vEarth ######################
 
-*~        #emacs backup files
-*.db      #sqlite databases
+*~
+*.db   
 
 /Assets/Resources/TerrainBin/
 /Assets/Resources/Terrain/
